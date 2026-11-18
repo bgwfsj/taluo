@@ -9,7 +9,6 @@ if (!m) { console.error('c-king image not found'); process.exit(1); }
 const dataUrl = m[1];
 
 const sizes = { 'mipmap-mdpi': 48, 'mipmap-hdpi': 72, 'mipmap-xhdpi': 96, 'mipmap-xxhdpi': 144, 'mipmap-xxxhdpi': 192 };
-const out = Object.keys(sizes).map(k => path.join(root, 'TarotApk/app/src/main/res', k));
 
 const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>
 <canvas id="c" width="300" height="195"></canvas>
@@ -52,7 +51,20 @@ img.onload = () => {
     if (hasTransp && dist([d[i],d[i+1],d[i+2]], bg) < 46) d[i+3]=0;
   }
   ctx.putImageData(id, 0, 0);
-  const fig = c;
+  // 计算人物包围盒（紧贴去背景后的非透明像素）
+  let minX=W, minY=cropH, maxX=-1, maxY=-1;
+  for (let y=0;y<cropH;y++) for (let x=0;x<W;x++) {
+    if (d[(y*W+x)*4+3] > 8) {
+      if (x<minX) minX=x; if (x>maxX) maxX=x;
+      if (y<minY) minY=y; if (y>maxY) maxY=y;
+    }
+  }
+  const bw = maxX-minX+1, bh = maxY-minY+1;
+  const figCv = document.createElement('canvas');
+  figCv.width = bw; figCv.height = bh;
+  const fg = figCv.getContext('2d');
+  fg.drawImage(c, minX, minY, bw, bh, 0, 0, bw, bh);
+  // 完全透明背景，人物最大化（94%）居中
   const results = {};
   const S = {${Object.keys(sizes).map(k => `'${k}':${sizes[k]}`).join(',')}};
   for (const key of Object.keys(S)) {
@@ -61,21 +73,15 @@ img.onload = () => {
       const cv = document.createElement('canvas');
       cv.width = s; cv.height = s;
       const g = cv.getContext('2d');
-      // 深色渐变底（翠绿 → 深蓝），无白底
-      const gr = g.createLinearGradient(0, 0, 0, s);
-      gr.addColorStop(0, '#0e7c60');
-      gr.addColorStop(1, '#0a548a');
-      g.fillStyle = gr;
-      g.fillRect(0, 0, s, s);
       if (round) {
         g.beginPath();
         g.arc(s/2, s/2, s/2, 0, Math.PI*2);
         g.clip();
       }
-      // 人物放大：86% 宽，居中
-      const fw = s * 0.86;
-      const fh = fw * cropH / W;
-      g.drawImage(fig, (s-fw)/2, (s-fh)/2, fw, fh);
+      const fit = s * 0.94;
+      const scale = Math.min(fit/bw, fit/bh);
+      const dw = bw*scale, dh = bh*scale;
+      g.drawImage(figCv, (s-dw)/2, (s-dh)/2, dw, dh);
       results[key + (round ? '_round' : '')] = cv.toDataURL('image/png');
     }
   }
@@ -88,7 +94,6 @@ img.src = '${dataUrl}';
 const procHtml = path.join(root, 'tests/_icon-proc.html');
 const dumpFile = path.join(root, 'tests/_icon-dump.html');
 fs.writeFileSync(procHtml, html);
-
 const chromeCandidates = [
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
@@ -97,20 +102,19 @@ const chrome = chromeCandidates.find(p => fs.existsSync(p));
 if (!chrome) { console.error('Chrome not found'); process.exit(1); }
 const url = 'file:///' + procHtml.replace(/\\/g, '/').replace(/ /g, '%20');
 const r = spawnSync(chrome, ['--headless=new', '--disable-gpu', '--no-sandbox', '--virtual-time-budget=8000', '--dump-dom', url], { encoding: 'utf8' });
-const dump = r.stdout;
-fs.writeFileSync(dumpFile, dump);
-const m2 = dump.match(/<div id="out">(\{.*\})<\/div>/s);
+fs.writeFileSync(dumpFile, r.stdout);
+const m2 = r.stdout.match(/<div id="out">(\{.*\})<\/div>/s);
 if (!m2) { console.error('no output from processor'); process.exit(1); }
 const results = JSON.parse(m2[1]);
+// 保存 512 预览（放大查看）与正式 mipmap
+const preview = Buffer.from(results['mipmap-xxxhdpi'].split(',')[1], 'base64');
+fs.writeFileSync(path.join(root, 'tests/icon-preview-transparent.png'), preview);
 for (const key of Object.keys(sizes)) {
   const dir = path.join(root, 'TarotApk/app/src/main/res', key);
   fs.mkdirSync(dir, { recursive: true });
-  const sq = Buffer.from(results[key].split(',')[1], 'base64');
-  const rd = Buffer.from(results[key + '_round'].split(',')[1], 'base64');
-  fs.writeFileSync(path.join(dir, 'ic_launcher.png'), sq);
-  fs.writeFileSync(path.join(dir, 'ic_launcher_round.png'), rd);
-  console.log('icon', key, sizes[key] + 'px', sq.length, rd.length);
+  fs.writeFileSync(path.join(dir, 'ic_launcher.png'), Buffer.from(results[key].split(',')[1], 'base64'));
+  fs.writeFileSync(path.join(dir, 'ic_launcher_round.png'), Buffer.from(results[key + '_round'].split(',')[1], 'base64'));
 }
 fs.unlinkSync(procHtml);
 fs.unlinkSync(dumpFile);
-console.log('icons generated');
+console.log('icons generated (transparent bg)');
