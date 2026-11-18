@@ -40,26 +40,11 @@ function homeShellHTML() {
 }
 
 function drawToday() {
-  const cardEl = document.getElementById('today-card');
-  if (!cardEl || cardEl.classList.contains('flipped')) return;
-  cardEl.classList.add('shake');
-  setTimeout(function () {
-    const card = randomCard();
-    const orientation = Math.random() < 0.5 ? 'upright' : 'reversed';
-    TodayStore.set(card.id, orientation);
-    cardEl.classList.remove('shake');
-    cardEl.classList.add('flipped');
-    setTimeout(function () {
-      const view = document.getElementById('view-home');
-      const hint = view.querySelector('.draw-hint');
-      if (hint) hint.style.opacity = '0';
-      const result = document.getElementById('today-result');
-      result.innerHTML = todayResultHTML(card, orientation, true);
-      bindDimItems(view);
-      bindResultActions(view, card, orientation);
-      toast('今日之牌已抽取');
-    }, 700);
-  }, 350);
+  const card = randomCard();
+  const orientation = Math.random() < 0.5 ? 'upright' : 'reversed';
+  TodayStore.set(card.id, orientation);
+  renderHome();
+  toast('今日之牌已抽取');
 }
 
 function todayResultHTML(card, orientation, animate) {
