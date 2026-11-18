@@ -1,46 +1,55 @@
-/* ===== 布局 ===== */
-#app { max-width: 520px; margin: 0 auto; padding: 0 16px calc(88px + var(--safe-b)); min-height: 100vh; }
+/* ===== 布局（airy-minimal-ui）===== */
+#app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 0 18px calc(96px + var(--safe-b)); min-height: 100vh; }
 
 .app-header {
   position: sticky; top: 0; z-index: 20;
-  background: var(--bg);
-  padding: calc(var(--safe-t) + 12px) 0 8px;
+  background: rgba(246,248,250,.72);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  padding: calc(var(--safe-t) + 14px) 0 10px;
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
 }
-.app-header .brand { font-size: 1.05rem; font-weight: 700; letter-spacing: .04em; }
-.app-header .brand .dot { color: var(--gold); }
-.app-header .date { font-size: .82rem; color: var(--ink-3); }
+.app-header .brand { display: flex; align-items: center; gap: 9px; font-size: .96rem; font-weight: 600; letter-spacing: .28em; text-indent: .28em; }
+.app-header .date { font-size: .78rem; color: var(--ink-3); letter-spacing: .08em; }
 
-.view { display: none; padding-top: 6px; }
-.view.active { display: block; animation: fadeUp .28s ease; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.view { display: none; padding-top: 10px; }
+.view.active { display: block; animation: pageIn .26s cubic-bezier(.22,.61,.36,1); }
+@keyframes pageIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 
-/* 底部导航 */
+/* 底部导航：悬浮胶囊 · 一字导航 */
 .tabbar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  display: flex; justify-content: space-around; align-items: stretch;
-  background: rgba(255,255,255,.94); backdrop-filter: blur(12px);
-  border-top: 1px solid var(--line);
-  padding-bottom: var(--safe-b);
-  max-width: 520px; margin: 0 auto;
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(12px + var(--safe-b)); z-index: 40;
+  display: flex; align-items: stretch;
+  background: rgba(255,255,255,.82);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(13,32,45,.08);
+  padding: 4px 6px;
+  gap: 2px;
 }
 .tabbar button {
-  flex: 1; padding: 8px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  font-size: .72rem; color: var(--ink-3); transition: color .15s ease;
+  flex: 1; min-width: 74px; padding: 8px 0 7px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: .94rem; font-weight: 400; color: var(--tab);
+  letter-spacing: .18em; text-indent: .18em;
+  border-radius: 999px;
+  transition: color .18s ease, background .18s ease;
 }
-.tabbar button .ico { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-.tabbar button svg { width: 22px; height: 22px; stroke: currentColor; }
-.tabbar button.active { color: var(--accent); font-weight: 600; }
+.tabbar button.active { color: var(--primary); background: var(--primary-soft); font-weight: 600; }
+.tabbar button .dot { width: 4px; height: 4px; border-radius: 50%; background: transparent; }
+.tabbar button.active .dot { background: var(--primary); animation: breathe 2.6s ease-in-out infinite; }
 
 /* 页面头（二级页） */
 .page-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 0 14px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0 16px;
 }
 .page-head .back {
-  width: 38px; height: 38px; border-radius: 50%; background: var(--surface);
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,.7); border: 1px solid var(--line-soft);
   display: flex; align-items: center; justify-content: center;
   box-shadow: var(--shadow-sm); color: var(--ink);
 }
 .page-head .back svg { width: 20px; height: 20px; stroke: currentColor; }
-.page-head h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+.page-head h1 { font-size: 1.06rem; font-weight: 700; flex: 1; letter-spacing: .06em; }

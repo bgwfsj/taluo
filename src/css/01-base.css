@@ -1,23 +1,29 @@
-/* ===== 基础 ===== */
+/* ===== 设计令牌（airy-minimal-ui）===== */
 :root {
-  --bg: #f6f5f2;
+  --bg: #f6f8fa;
   --surface: #ffffff;
-  --ink: #2b2b33;
-  --ink-2: #6d6d78;
-  --ink-3: #a0a0ab;
-  --line: #ecebe6;
-  --accent: #7c6ce0;
-  --accent-soft: #efecfb;
-  --accent-deep: #5f4ecb;
+  --ink: #0c1a22;
+  --ink-2: #5d7080;
+  --ink-3: #8b9aa6;
+  --line: rgba(13,32,45,.09);
+  --line-soft: rgba(13,32,45,.05);
+  --primary: #0aa87a;
+  --primary-soft: rgba(10,168,122,.10);
+  --blue: #0b8ed6;
+  --blue-soft: rgba(11,142,214,.10);
+  --danger: #e5484d;
+  --danger-soft: rgba(229,72,77,.10);
+  --upright: #0aa87a;
+  --reversed: #d97b4a;
   --gold: #c9a86a;
-  --upright: #7c6ce0;
-  --reversed: #d98a76;
-  --ok: #4caf7d;
-  --danger: #d96a5f;
-  --radius: 18px;
-  --radius-sm: 12px;
-  --shadow: 0 10px 30px rgba(43, 43, 51, .08);
-  --shadow-sm: 0 4px 14px rgba(43, 43, 51, .06);
+  --tab: #6594aa;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-sheet: 22px;
+  --shadow: 0 10px 30px rgba(13,32,45,.07);
+  --shadow-sm: 0 4px 14px rgba(13,32,45,.05);
+  --font-ui: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-num: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
 }
@@ -25,34 +31,63 @@
 html, body { margin: 0; padding: 0; }
 html { font-size: 16px; }
 body {
-  font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  background: var(--bg);
+  font-family: var(--font-ui);
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  min-height: 100vh;
+  background:
+    radial-gradient(72% 44% at 50% -6%, rgba(10,168,122,.11), transparent 62%),
+    radial-gradient(58% 42% at 50% 106%, rgba(11,142,214,.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+/* 44px 网格氛围，径向渐隐 */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(13,32,45,.04) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(13,32,45,.04) 0 1px, transparent 1px 44px);
+  -webkit-mask-image: radial-gradient(ellipse 90% 75% at 50% 42%, rgba(0,0,0,.9) 25%, transparent 80%);
+  mask-image: radial-gradient(ellipse 90% 75% at 50% 42%, rgba(0,0,0,.9) 25%, transparent 80%);
 }
 button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; padding: 0; }
 input, textarea { font-family: inherit; font-size: 1rem; color: var(--ink); }
 h1, h2, h3, h4, p { margin: 0; }
 ul { margin: 0; padding: 0; list-style: none; }
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--primary); text-decoration: none; }
 ::-webkit-scrollbar { width: 0; height: 0; }
 :focus { outline: none; }
-
 .hidden { display: none !important; }
 .muted { color: var(--ink-3); }
 .small { font-size: .82rem; }
 
+/* 呼吸小圆点 */
+.breath-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--primary);
+  animation: breathe 2.6s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(.72); } }
+
 /* 通用按钮 */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 12px 22px; border-radius: 999px; font-size: .95rem; font-weight: 600;
-  transition: transform .15s ease, opacity .15s ease, background .15s ease;
-  user-select: none;
+  padding: 11px 22px; border-radius: 999px; font-size: .92rem; font-weight: 600;
+  transition: transform .15s ease, opacity .15s ease, background .15s ease, box-shadow .2s ease;
+  user-select: none; -webkit-user-select: none;
 }
-.btn:active { transform: scale(.96); }
-.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 8px 20px rgba(124,108,224,.32); }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 8px 20px rgba(10,168,122,.28); }
 .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.btn-danger { background: var(--danger); color: #fff; box-shadow: 0 8px 20px rgba(229,72,77,.24); }
 .btn-block { width: 100%; }
-.btn-mini { padding: 8px 16px; font-size: .82rem; font-weight: 500; }
+.btn-mini { padding: 7px 15px; font-size: .8rem; font-weight: 500; }
+
+/* 等宽数字 */
+.num { font-family: var(--font-num); font-weight: 300; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+}

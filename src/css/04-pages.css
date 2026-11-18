@@ -1,68 +1,75 @@
-/* ===== 今日 ===== */
-.hero { text-align: center; padding: 18px 0 8px; }
-.hero h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: .06em; }
-.hero .sub { color: var(--ink-3); font-size: .86rem; margin-top: 4px; }
-.draw-zone { display: flex; flex-direction: column; align-items: center; padding: 22px 0 6px; }
-.draw-card-wrap { width: 210px; margin: 0 auto; }
+/* ===== 页面（airy-minimal-ui）===== */
+/* 今日 */
+.hero { text-align: center; padding: 24px 0 4px; }
+.hero .kicker { font-size: .68rem; font-weight: 600; color: var(--primary); letter-spacing: .34em; text-indent: .34em; margin-bottom: 9px; }
+.hero h2 { font-size: 27px; font-weight: 700; letter-spacing: .1em; text-indent: .1em; }
+.hero .sub { color: var(--ink-3); font-size: .86rem; margin-top: 9px; letter-spacing: .06em; }
+
+.draw-zone { display: flex; flex-direction: column; align-items: center; padding: 28px 0 4px; }
+.draw-card-wrap { width: 206px; margin: 0 auto; }
+.draw-card-wrap .tarot-card { filter: drop-shadow(0 16px 28px rgba(10,168,122,.20)); }
 .draw-hint {
-  margin-top: 18px; font-size: .86rem; color: var(--ink-2);
-  display: flex; align-items: center; gap: 8px;
+  margin-top: 20px; font-size: .84rem; color: var(--ink-2);
+  display: flex; align-items: center; gap: 9px; letter-spacing: .1em; text-indent: .1em;
 }
-.draw-hint .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1.6s ease infinite; }
-@keyframes pulse { 0%,100%{ opacity: 1; transform: scale(1) } 50%{ opacity: .4; transform: scale(.7) } }
+.draw-hint .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: breathe 2.6s ease-in-out infinite; }
 
 /* 抽牌结果 */
 .result-block { margin-top: 8px; }
 .orientation-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px; border-radius: 999px; font-size: .82rem; font-weight: 600; color: #fff;
+  padding: 5px 14px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+  letter-spacing: .16em; text-indent: .16em;
 }
-.orientation-badge.upright { background: var(--upright); }
-.orientation-badge.reversed { background: var(--reversed); }
-.result-title { text-align: center; margin: 10px 0 4px; }
-.result-title .cn { font-size: 1.3rem; font-weight: 700; }
-.result-title .en { font-size: .8rem; color: var(--ink-3); letter-spacing: .05em; }
-.summary-text { font-size: .92rem; color: var(--ink-2); text-align: center; padding: 0 6px; }
+.orientation-badge.upright { background: var(--primary-soft); color: var(--primary); }
+.orientation-badge.reversed { background: rgba(217,123,74,.13); color: var(--reversed); }
+.result-title { text-align: center; margin: 12px 0 4px; }
+.result-title .cn { font-size: 1.3rem; font-weight: 700; letter-spacing: .1em; text-indent: .1em; }
+.result-title .en { font-size: .76rem; color: var(--ink-3); letter-spacing: .12em; }
+.summary-text { font-size: .9rem; color: var(--ink-2); text-align: center; padding: 0 8px; letter-spacing: .02em; }
 .section-title {
-  font-size: .9rem; font-weight: 700; margin: 18px 0 10px;
-  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; font-weight: 700; margin: 22px 0 12px;
+  display: flex; align-items: center; gap: 10px; letter-spacing: .2em; text-indent: .2em;
 }
-.section-title::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: var(--gold); }
-.re-draw { margin-top: 20px; text-align: center; }
-.re-draw button { color: var(--ink-3); font-size: .8rem; text-decoration: underline; }
+.section-title::before { content: ""; width: 16px; height: 1px; background: var(--primary); }
+.re-draw { margin-top: 18px; text-align: center; }
+.re-draw button { color: var(--ink-3); font-size: .8rem; letter-spacing: .08em; border-bottom: 1px dashed var(--line); padding-bottom: 2px; }
 
-/* ===== 图鉴 ===== */
-.search-box { position: relative; margin: 4px 0 12px; }
-.search-box input { padding-left: 38px; }
-.search-box .mag { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: .95rem; }
+/* 图鉴 */
+.search-box { position: relative; margin: 8px 0 14px; }
+.search-box input { padding-left: 36px; border-radius: 999px; }
+.search-box .mag { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: .9rem; }
 
-/* ===== 牌义详情 ===== */
-.detail-card-wrap { width: 190px; margin: 4px auto 18px; }
-.detail-orientations { margin-top: 4px; }
+/* 牌义详情 */
+.detail-card-wrap { width: 188px; margin: 6px auto 20px; }
+.detail-card-wrap .tarot-card { filter: drop-shadow(0 16px 28px rgba(11,142,214,.18)); }
+.detail-card-wrap .face { cursor: pointer; }
+.orient-tip { text-align: center; font-size: .72rem; color: var(--ink-3); margin: 2px 0 18px; letter-spacing: .12em; text-indent: .12em; }
 .orient-block { margin-bottom: 14px; }
 .orient-block .orient-head {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; font-size: .95rem;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; font-size: .92rem; letter-spacing: .08em;
 }
-.orient-block .orient-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+.orient-block .orient-head .dot { width: 7px; height: 7px; border-radius: 50%; }
 .orient-block .orient-head .dot.upright { background: var(--upright); }
 .orient-block .orient-head .dot.reversed { background: var(--reversed); }
-.orient-block .orient-summary { font-size: .88rem; color: var(--ink-2); margin-bottom: 8px; }
+.orient-block .orient-summary { font-size: .86rem; color: var(--ink-2); margin-bottom: 8px; }
 .learn-toggle {
   display: flex; align-items: center; gap: 8px; width: 100%;
-  justify-content: center; padding: 12px; border-radius: var(--radius-sm);
-  border: 1px dashed var(--gold); color: var(--ink-2); font-size: .9rem; font-weight: 600;
+  justify-content: center; padding: 12px; border-radius: 999px;
+  border: 1px dashed var(--line); color: var(--ink-2); font-size: .86rem; font-weight: 600;
+  letter-spacing: .1em; text-indent: .1em; transition: all .2s ease;
 }
-.learn-toggle.done { background: #fbf7ee; border-style: solid; color: #9a7a3f; }
+.learn-toggle.done { background: var(--primary-soft); border-style: solid; border-color: rgba(10,168,122,.3); color: var(--primary); }
 
-/* ===== 我的 ===== */
+/* 我的 */
 .me-row {
   display: flex; align-items: center; gap: 12px; width: 100%;
-  padding: 14px 0; border-bottom: 1px solid var(--line);
-  font-size: .92rem; color: var(--ink);
+  padding: 14px 0; border-bottom: 1px solid var(--line-soft);
+  font-size: .9rem; color: var(--ink); text-align: left;
 }
 .me-row:last-child { border-bottom: none; }
-.me-row .ico { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex: none; }
+.me-row .ico { width: 34px; height: 34px; border-radius: 10px; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex: none; }
 .me-row .txt { flex: 1; text-align: left; }
-.me-row .sub { display: block; font-size: .76rem; color: var(--ink-3); margin-top: 1px; }
+.me-row .sub { display: block; font-size: .74rem; color: var(--ink-3); margin-top: 2px; }
 .me-row .arrow { color: var(--ink-3); }
-.version-line { text-align: center; color: var(--ink-3); font-size: .76rem; margin-top: 22px; }
+.version-line { text-align: center; color: var(--ink-3); font-size: .74rem; margin-top: 26px; letter-spacing: .06em; }

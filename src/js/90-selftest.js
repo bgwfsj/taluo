@@ -98,6 +98,61 @@ function runSelfTest() {
     if (!document.getElementById('me-export') || !document.getElementById('me-import')) fail('ui-me'); else pass('ui-me');
   } catch (e) { fail('ui-exception', e.message); }
 
+  // 4) 交互冒烟（弹层按钮绑定 / 重新抽取 / 备注编辑保存）
+  try {
+    const orig = {
+      notes: storeGet(STORE_KEYS.notes, {}),
+      learned: storeGet(STORE_KEYS.learned, []),
+      today: storeGet(STORE_KEYS.today, null)
+    };
+
+    // 重新抽取：点按钮 → 弹层 → 确认 → 回到抽牌态
+    TodayStore.set(TAROT_CARDS[5].id, 'upright');
+    renderHome();
+    const redrawBtn = document.getElementById('btn-redraw');
+    if (!redrawBtn) fail('redraw-btn');
+    else {
+      redrawBtn.click();
+      const sheet = document.querySelector('#modal-root .modal');
+      const confirmBtn = sheet && Array.prototype.find.call(sheet.querySelectorAll('button'), function (b) { return b.textContent.indexOf('重新抽取') >= 0; });
+      if (!sheet || !confirmBtn) fail('redraw-sheet');
+      else {
+        confirmBtn.click();
+        if (!document.getElementById('today-card')) fail('redraw-render');
+        else if (TodayStore.get()) fail('redraw-cleared');
+        else pass('redraw-flow');
+      }
+    }
+    TodayStore.clear();
+
+    // 备注：轻点条目 → 编辑弹层 → 保存生效
+    Router.go('detail'); renderDetail(TAROT_CARDS[0].id);
+    NotesStore.add(TAROT_CARDS[0].id, '弹层测试');
+    renderNotes(TAROT_CARDS[0].id);
+    const noteItem = document.querySelector('#notes-list .note-item');
+    if (!noteItem) fail('note-item');
+    else {
+      noteItem.click();
+      const editInput = document.getElementById('edit-note-input');
+      if (!editInput) fail('note-edit-sheet');
+      else {
+        editInput.value = '弹层已保存';
+        const saveBtn = Array.prototype.find.call(document.querySelectorAll('#modal-root .modal button'), function (b) { return b.textContent.indexOf('保存') >= 0; });
+        if (!saveBtn) fail('note-save-btn');
+        else {
+          saveBtn.click();
+          if (NotesStore.forCard(TAROT_CARDS[0].id)[0].text !== '弹层已保存') fail('note-save-apply');
+          else pass('note-edit-sheet');
+        }
+      }
+    }
+    NotesStore.forCard(TAROT_CARDS[0].id).forEach(function (n) { NotesStore.remove(TAROT_CARDS[0].id, n.ts); });
+
+    storeSet(STORE_KEYS.notes, orig.notes);
+    storeSet(STORE_KEYS.learned, orig.learned);
+    if (orig.today) storeSet(STORE_KEYS.today, orig.today); else localStorage.removeItem(STORE_KEYS.today);
+  } catch (e) { fail('interaction-exception', e.message); }
+
   const fails = results.filter(function (r) { return r.indexOf('FAIL') === 0; });
   const div = document.createElement('div');
   div.id = 'selftest';

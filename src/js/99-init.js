@@ -16,6 +16,28 @@ function boot() {
   // 供 WebView 壳的系统返回键调用
   window.taOnBack = function () { Router.back(); };
 
+  // 功能页左右滑动切换（首尾相连）
+  let swipeStartX = null, swipeStartY = null;
+  document.addEventListener('touchstart', function (e) {
+    if (e.target.closest('.modal-mask, .modal, #tabbar, textarea, input, .note-item')) return;
+    if (Router.current === 'detail') return;
+    swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (swipeStartX == null) return;
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    swipeStartX = null; swipeStartY = null;
+    if (Math.abs(dx) < 56 || Math.abs(dy) > Math.abs(dx) * 1.4) return;
+    const tabs = Router.tabs;
+    const idx = tabs.indexOf(Router.current);
+    const next = dx < 0 ? tabs[(idx + 1) % tabs.length] : tabs[(idx - 1 + tabs.length) % tabs.length];
+    if (next === 'glossary') renderGlossary();
+    else if (next === 'me') renderMe();
+    else renderHome();
+    Router.go(next);
+  }, { passive: true });
+
   // 预览/截图钩子：?page=glossary | ?page=detail&card=m00 | ?page=me
   try {
     const params = new URLSearchParams(location.search);

@@ -19,7 +19,7 @@ function renderHome() {
   if (TodayStore.isToday() && today) {
     const card = getCard(today.cardId);
     view.innerHTML =
-      '<section class="hero"><h2>今日之牌</h2><p class="sub">今日指引已抽取，愿你从容度过这一天</p></section>' +
+      '<section class="hero"><div class="kicker">今日 · 一抽</div><h2>今日之牌</h2><p class="sub">今日指引已抽取，愿你从容度过这一天</p></section>' +
       '<div class="result-block" id="today-result">' + todayResultHTML(card, today.orientation, false) + '</div>';
     bindDimItems(view);
     bindResultActions(view, card, today.orientation);
@@ -32,9 +32,9 @@ function renderHome() {
 
 function homeShellHTML() {
   return (
-    '<section class="hero"><h2>今日之牌</h2><p class="sub">轻触牌面，抽取今天的指引</p></section>' +
+    '<section class="hero"><div class="kicker">今日 · 一抽</div><h2>今日之牌</h2><p class="sub">轻触牌背，今日的指引已在风里</p></section>' +
     '<div class="draw-zone"><div class="draw-card-wrap">' + tarotCardHTML(null, { id: 'today-card' }) + '</div>' +
-    '<div class="draw-hint"><span class="pulse"></span><span>轻点牌面抽牌</span></div></div>' +
+    '<div class="draw-hint"><span class="pulse"></span><span>抽一张牌 · 听风说话</span></div></div>' +
     '<div class="result-block" id="today-result"></div>'
   );
 }
@@ -82,7 +82,7 @@ function todayResultHTML(card, orientation, animate) {
     '</div></div>' +
     '<div class="section-title">今日六维解读</div>' +
     '<div class="dim-grid">' + dims + '</div>' +
-    '<div class="re-draw"><button id="btn-redraw">再抽一次（覆盖今日结果）</button></div>' +
+    '<div class="re-draw"><button id="btn-redraw">重新抽取</button></div>' +
     '<div style="margin-top:14px;"><button id="btn-detail" class="btn btn-primary btn-block">查看完整牌义</button></div>'
   );
 }
@@ -98,14 +98,14 @@ function bindResultActions(view, card, orientation) {
   if (detailBtn) detailBtn.addEventListener('click', function () { Router.push('detail', card.id); });
   const redraw = view.querySelector('#btn-redraw');
   if (redraw) redraw.addEventListener('click', function () {
-    const close = openModal('重新抽取今日之牌？', '<p style="color:var(--ink-2);font-size:.9rem;">将覆盖今天已抽到的牌，确定要重新抽取吗？</p>',
-      modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-      modalBtn('重新抽取', 'btn-primary', function () {
-        closeModal();
-        TodayStore.clear();
-        renderHome();
-        const cardEl = document.getElementById('today-card');
-        if (cardEl) setTimeout(function () { cardEl.click(); }, 60);
-      }).outerHTML);
+    openModal('重新抽取今日之牌？', '<p style="color:var(--ink-2);font-size:.9rem;">将覆盖今天已抽到的牌，确定要重新抽取吗？</p>',
+      [modalBtn('取消', 'btn-ghost', closeModal),
+       modalBtn('重新抽取', 'btn-primary', function () {
+         closeModal();
+         TodayStore.clear();
+         renderHome();
+         const cardEl = document.getElementById('today-card');
+         if (cardEl) setTimeout(function () { cardEl.click(); }, 60);
+       })]);
   });
 }

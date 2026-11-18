@@ -6,26 +6,32 @@
 <meta name="theme-color" content="#f6f5f2">
 <title>塔罗之语</title>
 <style>
-/* ===== 基础 ===== */
+/* ===== 设计令牌（airy-minimal-ui）===== */
 :root {
-  --bg: #f6f5f2;
+  --bg: #f6f8fa;
   --surface: #ffffff;
-  --ink: #2b2b33;
-  --ink-2: #6d6d78;
-  --ink-3: #a0a0ab;
-  --line: #ecebe6;
-  --accent: #7c6ce0;
-  --accent-soft: #efecfb;
-  --accent-deep: #5f4ecb;
+  --ink: #0c1a22;
+  --ink-2: #5d7080;
+  --ink-3: #8b9aa6;
+  --line: rgba(13,32,45,.09);
+  --line-soft: rgba(13,32,45,.05);
+  --primary: #0aa87a;
+  --primary-soft: rgba(10,168,122,.10);
+  --blue: #0b8ed6;
+  --blue-soft: rgba(11,142,214,.10);
+  --danger: #e5484d;
+  --danger-soft: rgba(229,72,77,.10);
+  --upright: #0aa87a;
+  --reversed: #d97b4a;
   --gold: #c9a86a;
-  --upright: #7c6ce0;
-  --reversed: #d98a76;
-  --ok: #4caf7d;
-  --danger: #d96a5f;
-  --radius: 18px;
-  --radius-sm: 12px;
-  --shadow: 0 10px 30px rgba(43, 43, 51, .08);
-  --shadow-sm: 0 4px 14px rgba(43, 43, 51, .06);
+  --tab: #6594aa;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-sheet: 22px;
+  --shadow: 0 10px 30px rgba(13,32,45,.07);
+  --shadow-sm: 0 4px 14px rgba(13,32,45,.05);
+  --font-ui: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-num: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
 }
@@ -33,95 +39,135 @@
 html, body { margin: 0; padding: 0; }
 html { font-size: 16px; }
 body {
-  font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  background: var(--bg);
+  font-family: var(--font-ui);
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  min-height: 100vh;
+  background:
+    radial-gradient(72% 44% at 50% -6%, rgba(10,168,122,.11), transparent 62%),
+    radial-gradient(58% 42% at 50% 106%, rgba(11,142,214,.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+/* 44px 网格氛围，径向渐隐 */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(13,32,45,.04) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(13,32,45,.04) 0 1px, transparent 1px 44px);
+  -webkit-mask-image: radial-gradient(ellipse 90% 75% at 50% 42%, rgba(0,0,0,.9) 25%, transparent 80%);
+  mask-image: radial-gradient(ellipse 90% 75% at 50% 42%, rgba(0,0,0,.9) 25%, transparent 80%);
 }
 button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; padding: 0; }
 input, textarea { font-family: inherit; font-size: 1rem; color: var(--ink); }
 h1, h2, h3, h4, p { margin: 0; }
 ul { margin: 0; padding: 0; list-style: none; }
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--primary); text-decoration: none; }
 ::-webkit-scrollbar { width: 0; height: 0; }
 :focus { outline: none; }
-
 .hidden { display: none !important; }
 .muted { color: var(--ink-3); }
 .small { font-size: .82rem; }
 
+/* 呼吸小圆点 */
+.breath-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--primary);
+  animation: breathe 2.6s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(.72); } }
+
 /* 通用按钮 */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 12px 22px; border-radius: 999px; font-size: .95rem; font-weight: 600;
-  transition: transform .15s ease, opacity .15s ease, background .15s ease;
-  user-select: none;
+  padding: 11px 22px; border-radius: 999px; font-size: .92rem; font-weight: 600;
+  transition: transform .15s ease, opacity .15s ease, background .15s ease, box-shadow .2s ease;
+  user-select: none; -webkit-user-select: none;
 }
-.btn:active { transform: scale(.96); }
-.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 8px 20px rgba(124,108,224,.32); }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 8px 20px rgba(10,168,122,.28); }
 .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.btn-danger { background: var(--danger); color: #fff; box-shadow: 0 8px 20px rgba(229,72,77,.24); }
 .btn-block { width: 100%; }
-.btn-mini { padding: 8px 16px; font-size: .82rem; font-weight: 500; }
+.btn-mini { padding: 7px 15px; font-size: .8rem; font-weight: 500; }
 
-/* ===== 布局 ===== */
-#app { max-width: 520px; margin: 0 auto; padding: 0 16px calc(88px + var(--safe-b)); min-height: 100vh; }
+/* 等宽数字 */
+.num { font-family: var(--font-num); font-weight: 300; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+}
+
+/* ===== 布局（airy-minimal-ui）===== */
+#app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 0 18px calc(96px + var(--safe-b)); min-height: 100vh; }
 
 .app-header {
   position: sticky; top: 0; z-index: 20;
-  background: var(--bg);
-  padding: calc(var(--safe-t) + 12px) 0 8px;
+  background: rgba(246,248,250,.72);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  padding: calc(var(--safe-t) + 14px) 0 10px;
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
 }
-.app-header .brand { font-size: 1.05rem; font-weight: 700; letter-spacing: .04em; }
-.app-header .brand .dot { color: var(--gold); }
-.app-header .date { font-size: .82rem; color: var(--ink-3); }
+.app-header .brand { display: flex; align-items: center; gap: 9px; font-size: .96rem; font-weight: 600; letter-spacing: .28em; text-indent: .28em; }
+.app-header .date { font-size: .78rem; color: var(--ink-3); letter-spacing: .08em; }
 
-.view { display: none; padding-top: 6px; }
-.view.active { display: block; animation: fadeUp .28s ease; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.view { display: none; padding-top: 10px; }
+.view.active { display: block; animation: pageIn .26s cubic-bezier(.22,.61,.36,1); }
+@keyframes pageIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 
-/* 底部导航 */
+/* 底部导航：悬浮胶囊 · 一字导航 */
 .tabbar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  display: flex; justify-content: space-around; align-items: stretch;
-  background: rgba(255,255,255,.94); backdrop-filter: blur(12px);
-  border-top: 1px solid var(--line);
-  padding-bottom: var(--safe-b);
-  max-width: 520px; margin: 0 auto;
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(12px + var(--safe-b)); z-index: 40;
+  display: flex; align-items: stretch;
+  background: rgba(255,255,255,.82);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(13,32,45,.08);
+  padding: 4px 6px;
+  gap: 2px;
 }
 .tabbar button {
-  flex: 1; padding: 8px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  font-size: .72rem; color: var(--ink-3); transition: color .15s ease;
+  flex: 1; min-width: 74px; padding: 8px 0 7px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: .94rem; font-weight: 400; color: var(--tab);
+  letter-spacing: .18em; text-indent: .18em;
+  border-radius: 999px;
+  transition: color .18s ease, background .18s ease;
 }
-.tabbar button .ico { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-.tabbar button svg { width: 22px; height: 22px; stroke: currentColor; }
-.tabbar button.active { color: var(--accent); font-weight: 600; }
+.tabbar button.active { color: var(--primary); background: var(--primary-soft); font-weight: 600; }
+.tabbar button .dot { width: 4px; height: 4px; border-radius: 50%; background: transparent; }
+.tabbar button.active .dot { background: var(--primary); animation: breathe 2.6s ease-in-out infinite; }
 
 /* 页面头（二级页） */
 .page-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 0 14px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0 16px;
 }
 .page-head .back {
-  width: 38px; height: 38px; border-radius: 50%; background: var(--surface);
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,.7); border: 1px solid var(--line-soft);
   display: flex; align-items: center; justify-content: center;
   box-shadow: var(--shadow-sm); color: var(--ink);
 }
 .page-head .back svg { width: 20px; height: 20px; stroke: currentColor; }
-.page-head h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
+.page-head h1 { font-size: 1.06rem; font-weight: 700; flex: 1; letter-spacing: .06em; }
 
-/* ===== 塔罗牌 ===== */
+/* ===== 组件（airy-minimal-ui）===== */
+/* 塔罗牌 */
 .tarot-card {
   position: relative; width: 100%; aspect-ratio: 3 / 5;
   perspective: 1200px; user-select: none; -webkit-user-select: none;
 }
 .tarot-card .face {
-  position: absolute; inset: 0; border-radius: 16px;
+  position: absolute; inset: 0; border-radius: 14px;
   backface-visibility: hidden; -webkit-backface-visibility: hidden;
   transition: transform .7s cubic-bezier(.4, 1.1, .4, 1);
   overflow: hidden;
+  box-shadow: 0 12px 30px rgba(13,32,45,.14);
 }
 .tarot-card .face.front { transform: rotateY(180deg); }
 .tarot-card .face.back { transform: rotateY(0deg); }
@@ -131,255 +177,256 @@ a { color: var(--accent); text-decoration: none; }
 @keyframes shake { 0%,100%{transform:none} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
 
 /* 牌背 */
-.card-back {
-  position: absolute; inset: 0;
-  background: #241f3d;
-}
-.card-back .back-img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; display: block;
-}
+.card-back { position: absolute; inset: 0; background: #241f3d; }
+.card-back .back-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .card-back::before {
   content: ""; position: absolute; inset: 8px;
-  border: 1px solid rgba(255,255,255,.32); border-radius: 14px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,.28);
+  border: 1px solid rgba(255,255,255,.3); border-radius: 12px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,.25);
 }
 
-/* 牌面（正面） */
+/* 牌面 */
 .card-front {
   height: 100%;
   background: linear-gradient(170deg, #fdfdfb 0%, #f3f1ec 100%);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-soft);
   display: flex; flex-direction: column; align-items: center; justify-content: space-between;
   padding: 10px;
 }
 .card-front .corner {
-  width: 100%; display: flex; justify-content: space-between; align-items: center;
-  font-size: .78rem; font-weight: 700; color: var(--ink-2);
+  width: 100%; display: flex; justify-content: space-between;
+  font-size: .72rem; font-weight: 600; color: var(--ink-3);
 }
-.card-front .corner .num { font-family: Georgia, serif; font-size: .9rem; }
+.card-front .corner .num { font-family: var(--font-num); font-weight: 300; font-size: .82rem; }
 .card-front .art {
-  position: relative;
-  flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  position: relative; flex: 1; width: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   margin: 4px 0;
 }
-.card-front .art .glyph { font-size: 3.2rem; line-height: 1; }
-.card-front .art .suit { width: 64%; height: auto; }
-.card-front .art .rank-txt { font-family: Georgia, serif; font-size: 1.35rem; font-weight: 700; color: var(--ink); letter-spacing: .06em; }
 .card-front .art .card-img {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; border-radius: 10px; display: block;
+  object-fit: cover; border-radius: 9px; display: block;
 }
-.card-front .card-name { font-size: .78rem; font-weight: 600; color: var(--ink); letter-spacing: .1em; text-align: center; }
-.card-front .card-name-en { font-size: .6rem; color: var(--ink-3); letter-spacing: .04em; margin-top: 1px; }
+.card-front .art .glyph { font-size: 3rem; line-height: 1; }
+.card-front .art .suit { width: 64%; height: auto; }
+.card-front .art .rank-txt { font-family: var(--font-num); font-weight: 300; font-size: 1.2rem; color: var(--ink); letter-spacing: .06em; }
+.card-front .card-name { font-size: .72rem; font-weight: 600; color: var(--ink); letter-spacing: .12em; text-align: center; }
+.card-front .card-name-en { font-size: .58rem; color: var(--ink-3); letter-spacing: .06em; margin-top: 1px; }
 
 /* 迷你牌 */
 .mini-card {
-  position: relative; width: 54px; height: 90px; flex: none;
-  border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-sm);
+  position: relative; width: 52px; height: 87px; flex: none;
+  border-radius: 9px; overflow: hidden;
+  box-shadow: 0 6px 14px rgba(13,32,45,.10);
+  border: 1px solid var(--line-soft);
   background: linear-gradient(170deg, #fdfdfb, #f3f1ec);
-  border: 1px solid var(--line);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  padding: 4px;
 }
-.mini-card .glyph { font-size: 1.5rem; line-height: 1; }
+.mini-card .mini-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
+.mini-card .glyph { font-size: 1.4rem; line-height: 1; }
 .mini-card .suit { width: 46%; height: auto; }
-.mini-card .mini-num { font-family: Georgia, serif; font-size: .7rem; font-weight: 700; }
-.mini-card .mini-img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; border-radius: 7px; display: block;
-}
-.mini-card.back { background: linear-gradient(145deg, #3a3555, #241f3d); border-color: rgba(201,168,106,.4); }
-.mini-card.back .glyph { color: var(--gold); }
+.mini-card .mini-num { font-family: var(--font-num); font-weight: 300; font-size: .72rem; }
 
 /* 标签 / 关键词 */
 .chip {
-  display: inline-flex; align-items: center; padding: 5px 12px;
-  background: var(--accent-soft); color: var(--accent-deep);
-  border-radius: 999px; font-size: .8rem; font-weight: 500;
+  display: inline-flex; align-items: center; padding: 4px 11px;
+  background: var(--primary-soft); color: var(--primary);
+  border-radius: 999px; font-size: .76rem; font-weight: 500;
 }
-.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
 
 /* 六维解读 */
-.dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .dim-item {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
-  padding: 14px; cursor: pointer; transition: border-color .15s ease;
+  padding: 13px; cursor: pointer;
+  transition: border-color .15s ease, transform .15s ease;
 }
-.dim-item:active { border-color: var(--accent); }
-.dim-item .dim-head { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: .92rem; }
-.dim-item .dim-head .em { font-size: 1.1rem; }
+.dim-item:active { border-color: var(--primary); transform: scale(.98); }
+.dim-item .dim-head { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: .88rem; }
+.dim-item .dim-head .em { font-size: 1rem; }
 .dim-item .dim-body {
-  display: none; margin-top: 8px; font-size: .86rem; color: var(--ink-2); line-height: 1.55;
+  display: none; margin-top: 8px; font-size: .84rem; color: var(--ink-2); line-height: 1.6;
 }
 .dim-item.open .dim-body { display: block; }
-.dim-item.open .dim-head::after { content: "▾"; margin-left: auto; color: var(--ink-3); }
-.dim-item .dim-head::after { content: "▸"; margin-left: auto; color: var(--ink-3); }
+.dim-item .dim-head::after { content: "+"; margin-left: auto; color: var(--ink-3); font-size: .9rem; font-weight: 300; transition: transform .2s ease; }
+.dim-item.open .dim-head::after { content: "−"; }
 
-/* 卡片容器 */
+/* 面板 */
 .panel {
   background: var(--surface); border-radius: var(--radius); padding: 18px;
   box-shadow: var(--shadow-sm); border: 1px solid var(--line);
 }
 .panel + .panel { margin-top: 14px; }
-.panel-title { font-size: .95rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.panel-title { font-size: .9rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; letter-spacing: .06em; }
 
 /* Toast */
 .toast {
-  position: fixed; left: 50%; bottom: calc(100px + var(--safe-b)); transform: translateX(-50%) translateY(20px);
-  background: rgba(43,43,51,.92); color: #fff; font-size: .86rem;
-  padding: 10px 18px; border-radius: 999px; z-index: 100;
-  opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease;
+  position: fixed; left: 50%; bottom: calc(92px + var(--safe-b)); transform: translateX(-50%) translateY(16px);
+  background: rgba(12,26,34,.9); color: #fff; font-size: .84rem;
+  padding: 9px 17px; border-radius: 999px; z-index: 100;
+  opacity: 0; pointer-events: none; transition: opacity .24s ease, transform .24s ease;
   max-width: 80%; text-align: center;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Modal */
+/* 底部弹层（sheet） */
 .modal-mask {
-  position: fixed; inset: 0; background: rgba(30,28,45,.42); z-index: 90;
+  position: fixed; inset: 0; background: rgba(13,32,45,.30); z-index: 90;
   display: flex; align-items: flex-end; justify-content: center;
   animation: fadeIn .2s ease;
 }
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 .modal {
   background: var(--surface); width: 100%; max-width: 520px;
-  border-radius: 22px 22px 0 0; padding: 20px 18px calc(20px + var(--safe-b));
-  animation: slideUp .28s cubic-bezier(.3, .9, .3, 1);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  padding: 8px 20px calc(24px + var(--safe-b));
+  animation: slideUp .3s cubic-bezier(.22,.61,.36,1);
 }
-@keyframes slideUp { from { transform: translateY(40px); opacity: .6 } to { transform: none; opacity: 1 } }
-.modal h3 { font-size: 1rem; margin-bottom: 12px; }
+.modal .sheet-handle { width: 36px; height: 4px; border-radius: 999px; background: var(--line); margin: 2px auto 14px; }
+.modal h3 { font-size: 1rem; margin-bottom: 12px; letter-spacing: .04em; }
+.modal-actions { display: flex; gap: 10px; margin-top: 18px; }
 
 /* 表单 */
 .field { margin-bottom: 14px; }
-.field label { display: block; font-size: .84rem; color: var(--ink-2); margin-bottom: 6px; }
+.field label { display: block; font-size: .82rem; color: var(--ink-2); margin-bottom: 6px; }
 textarea, input[type="text"] {
   width: 100%; border: 1px solid var(--line); border-radius: var(--radius-sm);
   padding: 10px 12px; background: var(--bg); resize: vertical;
+  transition: border-color .15s ease, background .15s ease;
 }
-textarea:focus, input:focus { border-color: var(--accent); background: #fff; }
-.char-count { text-align: right; font-size: .72rem; color: var(--ink-3); margin-top: 4px; }
+textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
+.char-count { text-align: right; font-size: .7rem; color: var(--ink-3); margin-top: 4px; font-family: var(--font-num); }
 
 /* 进度条 */
-.progress { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.progress > div { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #a98de0); transition: width .4s ease; }
+.progress { height: 6px; border-radius: 999px; background: var(--line-soft); overflow: hidden; }
+.progress > div { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary), var(--blue)); transition: width .5s ease; }
 
 /* 备注 */
+.notes-tip { font-size: .72rem; color: var(--ink-3); margin: -4px 0 10px; letter-spacing: .04em; }
 .note-item {
+  position: relative; overflow: hidden;
   border: 1px solid var(--line); border-radius: var(--radius-sm);
-  padding: 12px 14px; margin-bottom: 10px; background: var(--bg);
+  padding: 12px 14px; margin-bottom: 10px; background: var(--surface);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.note-item .note-text { font-size: .88rem; white-space: pre-wrap; word-break: break-word; }
+.note-item.swiping { box-shadow: -10px 0 20px rgba(229,72,77,.18); border-color: rgba(229,72,77,.35); }
+.note-item .note-text { font-size: .86rem; white-space: pre-wrap; word-break: break-word; color: var(--ink); }
 .note-item .note-meta {
   display: flex; justify-content: space-between; align-items: center;
-  margin-top: 8px; font-size: .72rem; color: var(--ink-3);
+  margin-top: 8px; font-size: .7rem; color: var(--ink-3); font-family: var(--font-num);
 }
-.note-item .note-actions { display: flex; gap: 14px; }
-.note-item .note-actions button { color: var(--ink-3); font-size: .78rem; }
-.note-item .note-actions button:hover { color: var(--accent); }
 
 /* 分组列表 */
-.group { margin-bottom: 18px; }
+.group { margin-bottom: 20px; }
 .group-title {
-  position: sticky; top: 58px; z-index: 10;
-  font-size: .82rem; font-weight: 700; color: var(--ink-2);
-  background: var(--bg); padding: 8px 2px 6px;
+  position: sticky; top: 54px; z-index: 10;
+  font-size: .78rem; font-weight: 700; color: var(--ink-2); letter-spacing: .16em; text-indent: .16em;
+  background: linear-gradient(180deg, rgba(246,248,250,.92), rgba(246,248,250,.8));
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  padding: 10px 2px 8px;
 }
-.group-title .count { color: var(--ink-3); font-weight: 400; margin-left: 4px; }
+.group-title .count { color: var(--ink-3); font-weight: 400; margin-left: 6px; font-family: var(--font-num); }
 .card-row {
   display: flex; align-items: center; gap: 14px;
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
   padding: 10px 14px; margin-bottom: 10px; cursor: pointer;
-  transition: border-color .15s ease;
+  transition: border-color .15s ease, transform .15s ease;
 }
-.card-row:active { border-color: var(--accent); }
+.card-row:active { border-color: var(--primary); transform: scale(.99); }
 .card-row .row-info { flex: 1; min-width: 0; }
-.card-row .row-name { font-weight: 600; font-size: .95rem; }
-.card-row .row-en { font-size: .72rem; color: var(--ink-3); }
+.card-row .row-name { font-weight: 600; font-size: .92rem; }
+.card-row .row-en { font-size: .7rem; color: var(--ink-3); letter-spacing: .04em; }
 .card-row .row-kw {
-  font-size: .76rem; color: var(--ink-2); margin-top: 3px;
+  font-size: .74rem; color: var(--ink-2); margin-top: 3px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.learned-badge {
-  color: var(--gold); flex: none; font-size: 1rem;
-}
+.learned-badge { color: var(--gold); flex: none; font-size: .95rem; }
 .learned-badge::before { content: "☆"; }
-.learned-badge.done::before { content: "★"; color: var(--gold); }
+.learned-badge.done::before { content: "★"; }
 
 /* 搜索结果空态 */
-.empty-tip { text-align: center; color: var(--ink-3); padding: 40px 0; font-size: .88rem; }
+.empty-tip { text-align: center; color: var(--ink-3); padding: 40px 0; font-size: .86rem; }
 
 /* 逆位视觉（内容旋转 180°） */
 .card-front.rev { transform: rotate(180deg); }
-.mini-card.rev .mini-num, .mini-card.rev .glyph, .mini-card.rev .suit, .mini-card.rev .mini-img { transform: rotate(180deg); }
+.mini-card.rev .mini-img { transform: rotate(180deg); }
 
-/* ===== 今日 ===== */
-.hero { text-align: center; padding: 18px 0 8px; }
-.hero h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: .06em; }
-.hero .sub { color: var(--ink-3); font-size: .86rem; margin-top: 4px; }
-.draw-zone { display: flex; flex-direction: column; align-items: center; padding: 22px 0 6px; }
-.draw-card-wrap { width: 210px; margin: 0 auto; }
+/* ===== 页面（airy-minimal-ui）===== */
+/* 今日 */
+.hero { text-align: center; padding: 24px 0 4px; }
+.hero .kicker { font-size: .68rem; font-weight: 600; color: var(--primary); letter-spacing: .34em; text-indent: .34em; margin-bottom: 9px; }
+.hero h2 { font-size: 27px; font-weight: 700; letter-spacing: .1em; text-indent: .1em; }
+.hero .sub { color: var(--ink-3); font-size: .86rem; margin-top: 9px; letter-spacing: .06em; }
+
+.draw-zone { display: flex; flex-direction: column; align-items: center; padding: 28px 0 4px; }
+.draw-card-wrap { width: 206px; margin: 0 auto; }
+.draw-card-wrap .tarot-card { filter: drop-shadow(0 16px 28px rgba(10,168,122,.20)); }
 .draw-hint {
-  margin-top: 18px; font-size: .86rem; color: var(--ink-2);
-  display: flex; align-items: center; gap: 8px;
+  margin-top: 20px; font-size: .84rem; color: var(--ink-2);
+  display: flex; align-items: center; gap: 9px; letter-spacing: .1em; text-indent: .1em;
 }
-.draw-hint .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1.6s ease infinite; }
-@keyframes pulse { 0%,100%{ opacity: 1; transform: scale(1) } 50%{ opacity: .4; transform: scale(.7) } }
+.draw-hint .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: breathe 2.6s ease-in-out infinite; }
 
 /* 抽牌结果 */
 .result-block { margin-top: 8px; }
 .orientation-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px; border-radius: 999px; font-size: .82rem; font-weight: 600; color: #fff;
+  padding: 5px 14px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+  letter-spacing: .16em; text-indent: .16em;
 }
-.orientation-badge.upright { background: var(--upright); }
-.orientation-badge.reversed { background: var(--reversed); }
-.result-title { text-align: center; margin: 10px 0 4px; }
-.result-title .cn { font-size: 1.3rem; font-weight: 700; }
-.result-title .en { font-size: .8rem; color: var(--ink-3); letter-spacing: .05em; }
-.summary-text { font-size: .92rem; color: var(--ink-2); text-align: center; padding: 0 6px; }
+.orientation-badge.upright { background: var(--primary-soft); color: var(--primary); }
+.orientation-badge.reversed { background: rgba(217,123,74,.13); color: var(--reversed); }
+.result-title { text-align: center; margin: 12px 0 4px; }
+.result-title .cn { font-size: 1.3rem; font-weight: 700; letter-spacing: .1em; text-indent: .1em; }
+.result-title .en { font-size: .76rem; color: var(--ink-3); letter-spacing: .12em; }
+.summary-text { font-size: .9rem; color: var(--ink-2); text-align: center; padding: 0 8px; letter-spacing: .02em; }
 .section-title {
-  font-size: .9rem; font-weight: 700; margin: 18px 0 10px;
-  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; font-weight: 700; margin: 22px 0 12px;
+  display: flex; align-items: center; gap: 10px; letter-spacing: .2em; text-indent: .2em;
 }
-.section-title::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: var(--gold); }
-.re-draw { margin-top: 20px; text-align: center; }
-.re-draw button { color: var(--ink-3); font-size: .8rem; text-decoration: underline; }
+.section-title::before { content: ""; width: 16px; height: 1px; background: var(--primary); }
+.re-draw { margin-top: 18px; text-align: center; }
+.re-draw button { color: var(--ink-3); font-size: .8rem; letter-spacing: .08em; border-bottom: 1px dashed var(--line); padding-bottom: 2px; }
 
-/* ===== 图鉴 ===== */
-.search-box { position: relative; margin: 4px 0 12px; }
-.search-box input { padding-left: 38px; }
-.search-box .mag { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: .95rem; }
+/* 图鉴 */
+.search-box { position: relative; margin: 8px 0 14px; }
+.search-box input { padding-left: 36px; border-radius: 999px; }
+.search-box .mag { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: .9rem; }
 
-/* ===== 牌义详情 ===== */
-.detail-card-wrap { width: 190px; margin: 4px auto 18px; }
-.detail-orientations { margin-top: 4px; }
+/* 牌义详情 */
+.detail-card-wrap { width: 188px; margin: 6px auto 20px; }
+.detail-card-wrap .tarot-card { filter: drop-shadow(0 16px 28px rgba(11,142,214,.18)); }
+.detail-card-wrap .face { cursor: pointer; }
+.orient-tip { text-align: center; font-size: .72rem; color: var(--ink-3); margin: 2px 0 18px; letter-spacing: .12em; text-indent: .12em; }
 .orient-block { margin-bottom: 14px; }
 .orient-block .orient-head {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; font-size: .95rem;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; font-size: .92rem; letter-spacing: .08em;
 }
-.orient-block .orient-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+.orient-block .orient-head .dot { width: 7px; height: 7px; border-radius: 50%; }
 .orient-block .orient-head .dot.upright { background: var(--upright); }
 .orient-block .orient-head .dot.reversed { background: var(--reversed); }
-.orient-block .orient-summary { font-size: .88rem; color: var(--ink-2); margin-bottom: 8px; }
+.orient-block .orient-summary { font-size: .86rem; color: var(--ink-2); margin-bottom: 8px; }
 .learn-toggle {
   display: flex; align-items: center; gap: 8px; width: 100%;
-  justify-content: center; padding: 12px; border-radius: var(--radius-sm);
-  border: 1px dashed var(--gold); color: var(--ink-2); font-size: .9rem; font-weight: 600;
+  justify-content: center; padding: 12px; border-radius: 999px;
+  border: 1px dashed var(--line); color: var(--ink-2); font-size: .86rem; font-weight: 600;
+  letter-spacing: .1em; text-indent: .1em; transition: all .2s ease;
 }
-.learn-toggle.done { background: #fbf7ee; border-style: solid; color: #9a7a3f; }
+.learn-toggle.done { background: var(--primary-soft); border-style: solid; border-color: rgba(10,168,122,.3); color: var(--primary); }
 
-/* ===== 我的 ===== */
+/* 我的 */
 .me-row {
   display: flex; align-items: center; gap: 12px; width: 100%;
-  padding: 14px 0; border-bottom: 1px solid var(--line);
-  font-size: .92rem; color: var(--ink);
+  padding: 14px 0; border-bottom: 1px solid var(--line-soft);
+  font-size: .9rem; color: var(--ink); text-align: left;
 }
 .me-row:last-child { border-bottom: none; }
-.me-row .ico { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex: none; }
+.me-row .ico { width: 34px; height: 34px; border-radius: 10px; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex: none; }
 .me-row .txt { flex: 1; text-align: left; }
-.me-row .sub { display: block; font-size: .76rem; color: var(--ink-3); margin-top: 1px; }
+.me-row .sub { display: block; font-size: .74rem; color: var(--ink-3); margin-top: 2px; }
 .me-row .arrow { color: var(--ink-3); }
-.version-line { text-align: center; color: var(--ink-3); font-size: .76rem; margin-top: 22px; }
+.version-line { text-align: center; color: var(--ink-3); font-size: .74rem; margin-top: 26px; letter-spacing: .06em; }
 
 </style>
 </head>
@@ -398,8 +445,9 @@ textarea:focus, input:focus { border-color: var(--accent); background: #fff; }
 // ===== 常量 =====
 const APP_INFO = {
   name: '塔罗之语',
-  version: '0.2.0',
+  version: '0.3.0',
   changelog: [
+    { v: '0.3.0', date: '2026-11-18', items: ['UI 改版：轻盈极简 · 绿蓝光晕 · 留白 · 底部弹层', '修复弹层按钮失效（重新抽取 / 删除 / 重置）', '备注轻点编辑 · 左滑删除', '功能页左右滑动切换', '底部一字导航：今 · 鉴 · 我'] },
     { v: '0.2.0', date: '2026-11-18', items: ['78 张牌面替换为 Rider-Waite 原版插画（公有领域）', '新增真实牌背图案', '修复翻转动画：抽牌时牌背朝上、翻开显示牌面'] },
     { v: '0.1.0', date: '2026-11-18', items: ['初版：今日之牌每日一抽', '78 张牌正逆位含义图鉴', '已学习标记与无限条备注（每条 500 字）'] }
   ]
@@ -512,7 +560,7 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2200);
+  toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
 }
 
 function openModal(title, bodyHTML, actions) {
@@ -521,9 +569,13 @@ function openModal(title, bodyHTML, actions) {
   mask.className = 'modal-mask';
   mask.innerHTML =
     '<div class="modal" role="dialog" aria-modal="true">' +
+    '<div class="sheet-handle"></div>' +
     '<h3>' + title + '</h3>' + bodyHTML +
-    '<div class="modal-actions" style="display:flex;gap:10px;margin-top:16px;">' + (actions || '') + '</div>' +
+    '<div class="modal-actions"></div>' +
     '</div>';
+  const actionsEl = mask.querySelector('.modal-actions');
+  if (Array.isArray(actions)) { actions.forEach(function (a) { if (a) actionsEl.appendChild(a); }); }
+  else if (actions) { actionsEl.appendChild(actions); }
   root.appendChild(mask);
   mask.addEventListener('click', function (e) {
     if (e.target === mask) closeModal();
@@ -602,12 +654,12 @@ const Router = {
 
 function tabbarHTML() {
   const items = [
-    { view: 'home', icon: ICONS.home, label: '今日' },
-    { view: 'glossary', icon: ICONS.book, label: '图鉴' },
-    { view: 'me', icon: ICONS.me, label: '我的' }
+    { view: 'home', label: '今' },
+    { view: 'glossary', label: '鉴' },
+    { view: 'me', label: '我' }
   ];
   return items.map(it =>
-    '<button data-view="' + it.view + '"><span class="ico">' + it.icon + '</span>' + it.label + '</button>'
+    '<button data-view="' + it.view + '"><span class="dot"></span>' + it.label + '</button>'
   ).join('');
 }
 
@@ -632,7 +684,7 @@ function renderHome() {
   if (TodayStore.isToday() && today) {
     const card = getCard(today.cardId);
     view.innerHTML =
-      '<section class="hero"><h2>今日之牌</h2><p class="sub">今日指引已抽取，愿你从容度过这一天</p></section>' +
+      '<section class="hero"><div class="kicker">今日 · 一抽</div><h2>今日之牌</h2><p class="sub">今日指引已抽取，愿你从容度过这一天</p></section>' +
       '<div class="result-block" id="today-result">' + todayResultHTML(card, today.orientation, false) + '</div>';
     bindDimItems(view);
     bindResultActions(view, card, today.orientation);
@@ -645,9 +697,9 @@ function renderHome() {
 
 function homeShellHTML() {
   return (
-    '<section class="hero"><h2>今日之牌</h2><p class="sub">轻触牌面，抽取今天的指引</p></section>' +
+    '<section class="hero"><div class="kicker">今日 · 一抽</div><h2>今日之牌</h2><p class="sub">轻触牌背，今日的指引已在风里</p></section>' +
     '<div class="draw-zone"><div class="draw-card-wrap">' + tarotCardHTML(null, { id: 'today-card' }) + '</div>' +
-    '<div class="draw-hint"><span class="pulse"></span><span>轻点牌面抽牌</span></div></div>' +
+    '<div class="draw-hint"><span class="pulse"></span><span>抽一张牌 · 听风说话</span></div></div>' +
     '<div class="result-block" id="today-result"></div>'
   );
 }
@@ -695,7 +747,7 @@ function todayResultHTML(card, orientation, animate) {
     '</div></div>' +
     '<div class="section-title">今日六维解读</div>' +
     '<div class="dim-grid">' + dims + '</div>' +
-    '<div class="re-draw"><button id="btn-redraw">再抽一次（覆盖今日结果）</button></div>' +
+    '<div class="re-draw"><button id="btn-redraw">重新抽取</button></div>' +
     '<div style="margin-top:14px;"><button id="btn-detail" class="btn btn-primary btn-block">查看完整牌义</button></div>'
   );
 }
@@ -711,15 +763,15 @@ function bindResultActions(view, card, orientation) {
   if (detailBtn) detailBtn.addEventListener('click', function () { Router.push('detail', card.id); });
   const redraw = view.querySelector('#btn-redraw');
   if (redraw) redraw.addEventListener('click', function () {
-    const close = openModal('重新抽取今日之牌？', '<p style="color:var(--ink-2);font-size:.9rem;">将覆盖今天已抽到的牌，确定要重新抽取吗？</p>',
-      modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-      modalBtn('重新抽取', 'btn-primary', function () {
-        closeModal();
-        TodayStore.clear();
-        renderHome();
-        const cardEl = document.getElementById('today-card');
-        if (cardEl) setTimeout(function () { cardEl.click(); }, 60);
-      }).outerHTML);
+    openModal('重新抽取今日之牌？', '<p style="color:var(--ink-2);font-size:.9rem;">将覆盖今天已抽到的牌，确定要重新抽取吗？</p>',
+      [modalBtn('取消', 'btn-ghost', closeModal),
+       modalBtn('重新抽取', 'btn-primary', function () {
+         closeModal();
+         TodayStore.clear();
+         renderHome();
+         const cardEl = document.getElementById('today-card');
+         if (cardEl) setTimeout(function () { cardEl.click(); }, 60);
+       })]);
   });
 }
 
@@ -802,14 +854,16 @@ function renderDetail(cardId) {
     '<div class="page-head"><button class="back" id="detail-back">' + ICONS.back + '</button>' +
       '<h1>' + card.name + '</h1><span class="muted small" style="flex:none;">' + card.nameEn + '</span></div>' +
     '<div class="detail-card-wrap" id="detail-card-wrap">' + tarotCardHTML(card, { flipped: true, reversed: detailVisRev }) + '</div>' +
-    '<p style="text-align:center;font-size:.76rem;color:var(--ink-3);margin:2px 0 16px;" id="orient-tip">轻触牌面切换 正位 / 逆位 展示</p>' +
+    '<p class="orient-tip" id="orient-tip">轻触牌面切换正逆位</p>' +
     '<button class="learn-toggle' + (LearnedStore.has(card.id) ? ' done' : '') + '" id="learn-toggle">' +
       '<span id="learn-star">' + (LearnedStore.has(card.id) ? '★' : '☆') + '</span>' +
       '<span id="learn-label">' + (LearnedStore.has(card.id) ? '已标记学习' : '标记为已学习') + '</span></button>' +
     orientBlockHTML(card, 'upright') +
     orientBlockHTML(card, 'reversed') +
     '<div class="panel"><div class="panel-title">🖼️ 牌面描述</div><p style="font-size:.88rem;color:var(--ink-2);">' + esc(card.desc) + '</p></div>' +
-    '<div class="panel" id="notes-panel"><div class="panel-title">📝 备注</div>' + notesFormHTML(card.id) + '<div id="notes-list"></div></div>';
+    '<div class="panel" id="notes-panel"><div class="panel-title">📝 备注</div>' +
+      '<div class="notes-tip">轻点可编辑 · 左滑可删除</div>' +
+      notesFormHTML(card.id) + '<div id="notes-list"></div></div>';
 
   // 返回
   view.querySelector('#detail-back').addEventListener('click', function () { Router.back(); });
@@ -883,50 +937,85 @@ function renderNotes(cardId) {
     return (
       '<div class="note-item" data-ts="' + n.ts + '">' +
         '<div class="note-text">' + esc(n.text) + '</div>' +
-        '<div class="note-meta"><span>' + fmtDate(n.ts) + '</span>' +
-          '<span class="note-actions"><button class="note-edit">编辑</button><button class="note-del">删除</button></span>' +
-        '</div>' +
+        '<div class="note-meta"><span>' + fmtDate(n.ts) + '</span></div>' +
       '</div>'
     );
   }).join('');
-  list.querySelectorAll('.note-edit').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const ts = Number(btn.closest('.note-item').dataset.ts);
-      editNote(cardId, ts);
-    });
+  list.querySelectorAll('.note-item').forEach(function (item) {
+    bindNoteItem(cardId, item);
   });
-  list.querySelectorAll('.note-del').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const ts = Number(btn.closest('.note-item').dataset.ts);
-      const close = openModal('删除这条备注？', '<p style="color:var(--ink-2);font-size:.9rem;">删除后不可恢复。</p>',
-        modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-        modalBtn('删除', 'btn-primary', function () {
-          closeModal();
-          NotesStore.remove(cardId, ts);
-          renderNotes(cardId);
-          toast('备注已删除');
-        }).outerHTML);
-    });
+}
+
+function bindNoteItem(cardId, item) {
+  let suppressClick = false;
+  let startX = null, startY = null, curX = null;
+  item.addEventListener('touchstart', function (e) {
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; curX = startX;
+  }, { passive: true });
+  item.addEventListener('touchmove', function (e) {
+    curX = e.touches[0].clientX;
+    const dx = curX - startX;
+    if (dx < 0 && Math.abs(dx) > Math.abs(e.touches[0].clientY - startY)) {
+      item.style.transform = 'translateX(' + Math.max(dx, -70) + 'px)';
+      item.classList.add('swiping');
+    }
+  }, { passive: true });
+  item.addEventListener('touchend', function () {
+    const dx = curX - startX;
+    item.style.transform = '';
+    item.style.transition = 'transform .18s ease';
+    item.classList.remove('swiping');
+    setTimeout(function () { item.style.transition = ''; }, 200);
+    if (dx < -64) {
+      suppressClick = true;
+      deleteNote(cardId, Number(item.dataset.ts));
+      setTimeout(function () { suppressClick = false; }, 400);
+    }
   });
+  item.addEventListener('click', function () {
+    if (suppressClick) return;
+    editNote(cardId, Number(item.dataset.ts));
+  });
+}
+
+function deleteNote(cardId, ts) {
+  openModal('删除这条备注？', '<p style="color:var(--ink-2);font-size:.9rem;">删除后不可恢复。</p>',
+    [modalBtn('取消', 'btn-ghost', closeModal),
+     modalBtn('删除', 'btn-danger', function () {
+       closeModal();
+       NotesStore.remove(cardId, ts);
+       renderNotes(cardId);
+       toast('备注已删除');
+     })]);
 }
 
 function editNote(cardId, ts) {
   const note = NotesStore.forCard(cardId).find(function (n) { return n.ts === ts; });
   if (!note) return;
-  const close = openModal('编辑备注',
+  openModal('编辑备注',
     '<textarea id="edit-note-input" maxlength="' + NOTE_LIMIT + '" style="min-height:90px;">' + esc(note.text) + '</textarea>' +
     '<div class="char-count"><span id="edit-note-count">' + note.text.length + '</span> / ' + NOTE_LIMIT + '</div>',
-    modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-    modalBtn('保存', 'btn-primary', function () {
-      const input = document.getElementById('edit-note-input');
-      const text = input.value.trim();
-      if (!text) { toast('备注内容不能为空'); return; }
-      if (text.length > NOTE_LIMIT) { toast('每条备注最多 ' + NOTE_LIMIT + ' 字'); return; }
-      NotesStore.update(cardId, ts, text);
-      closeModal();
-      renderNotes(cardId);
-      toast('备注已更新');
-    }).outerHTML);
+    [modalBtn('取消', 'btn-ghost', closeModal),
+     modalBtn('保存', 'btn-primary', function () {
+       const input = document.getElementById('edit-note-input');
+       const text = input.value.trim();
+       if (!text) { toast('备注内容不能为空'); return; }
+       if (text.length > NOTE_LIMIT) { toast('每条备注最多 ' + NOTE_LIMIT + ' 字'); return; }
+       NotesStore.update(cardId, ts, text);
+       closeModal();
+       renderNotes(cardId);
+       toast('备注已更新');
+     })]);
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-ghost btn-block';
+  delBtn.style.marginTop = '10px';
+  delBtn.textContent = '删除此条备注';
+  delBtn.addEventListener('click', function () {
+    closeModal();
+    deleteNote(cardId, ts);
+  });
+  const sheet = document.querySelector('#modal-root .modal');
+  if (sheet) sheet.appendChild(delBtn);
   const input = document.getElementById('edit-note-input');
   const count = document.getElementById('edit-note-count');
   input.addEventListener('input', function () { count.textContent = String(input.value.length); });
@@ -988,14 +1077,14 @@ function renderMe() {
   });
   // 重置
   view.querySelector('#me-reset').addEventListener('click', function () {
-    const close = openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记和今日之牌，且不可恢复。建议先导出备份。</p>',
-      modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-      modalBtn('确认重置', 'btn-primary', function () {
-        closeModal();
-        Object.keys(STORE_KEYS).forEach(function (k) { localStorage.removeItem(STORE_KEYS[k]); });
-        renderMe();
-        toast('已重置全部数据');
-      }).outerHTML);
+    openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记和今日之牌，且不可恢复。建议先导出备份。</p>',
+      [modalBtn('取消', 'btn-ghost', closeModal),
+       modalBtn('确认重置', 'btn-danger', function () {
+         closeModal();
+         Object.keys(STORE_KEYS).forEach(function (k) { localStorage.removeItem(STORE_KEYS[k]); });
+         renderMe();
+         toast('已重置全部数据');
+       })]);
   });
 }
 
@@ -2257,6 +2346,61 @@ function runSelfTest() {
     if (!document.getElementById('me-export') || !document.getElementById('me-import')) fail('ui-me'); else pass('ui-me');
   } catch (e) { fail('ui-exception', e.message); }
 
+  // 4) 交互冒烟（弹层按钮绑定 / 重新抽取 / 备注编辑保存）
+  try {
+    const orig = {
+      notes: storeGet(STORE_KEYS.notes, {}),
+      learned: storeGet(STORE_KEYS.learned, []),
+      today: storeGet(STORE_KEYS.today, null)
+    };
+
+    // 重新抽取：点按钮 → 弹层 → 确认 → 回到抽牌态
+    TodayStore.set(TAROT_CARDS[5].id, 'upright');
+    renderHome();
+    const redrawBtn = document.getElementById('btn-redraw');
+    if (!redrawBtn) fail('redraw-btn');
+    else {
+      redrawBtn.click();
+      const sheet = document.querySelector('#modal-root .modal');
+      const confirmBtn = sheet && Array.prototype.find.call(sheet.querySelectorAll('button'), function (b) { return b.textContent.indexOf('重新抽取') >= 0; });
+      if (!sheet || !confirmBtn) fail('redraw-sheet');
+      else {
+        confirmBtn.click();
+        if (!document.getElementById('today-card')) fail('redraw-render');
+        else if (TodayStore.get()) fail('redraw-cleared');
+        else pass('redraw-flow');
+      }
+    }
+    TodayStore.clear();
+
+    // 备注：轻点条目 → 编辑弹层 → 保存生效
+    Router.go('detail'); renderDetail(TAROT_CARDS[0].id);
+    NotesStore.add(TAROT_CARDS[0].id, '弹层测试');
+    renderNotes(TAROT_CARDS[0].id);
+    const noteItem = document.querySelector('#notes-list .note-item');
+    if (!noteItem) fail('note-item');
+    else {
+      noteItem.click();
+      const editInput = document.getElementById('edit-note-input');
+      if (!editInput) fail('note-edit-sheet');
+      else {
+        editInput.value = '弹层已保存';
+        const saveBtn = Array.prototype.find.call(document.querySelectorAll('#modal-root .modal button'), function (b) { return b.textContent.indexOf('保存') >= 0; });
+        if (!saveBtn) fail('note-save-btn');
+        else {
+          saveBtn.click();
+          if (NotesStore.forCard(TAROT_CARDS[0].id)[0].text !== '弹层已保存') fail('note-save-apply');
+          else pass('note-edit-sheet');
+        }
+      }
+    }
+    NotesStore.forCard(TAROT_CARDS[0].id).forEach(function (n) { NotesStore.remove(TAROT_CARDS[0].id, n.ts); });
+
+    storeSet(STORE_KEYS.notes, orig.notes);
+    storeSet(STORE_KEYS.learned, orig.learned);
+    if (orig.today) storeSet(STORE_KEYS.today, orig.today); else localStorage.removeItem(STORE_KEYS.today);
+  } catch (e) { fail('interaction-exception', e.message); }
+
   const fails = results.filter(function (r) { return r.indexOf('FAIL') === 0; });
   const div = document.createElement('div');
   div.id = 'selftest';
@@ -2283,6 +2427,28 @@ function boot() {
   Router.go('home');
   // 供 WebView 壳的系统返回键调用
   window.taOnBack = function () { Router.back(); };
+
+  // 功能页左右滑动切换（首尾相连）
+  let swipeStartX = null, swipeStartY = null;
+  document.addEventListener('touchstart', function (e) {
+    if (e.target.closest('.modal-mask, .modal, #tabbar, textarea, input, .note-item')) return;
+    if (Router.current === 'detail') return;
+    swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (swipeStartX == null) return;
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    swipeStartX = null; swipeStartY = null;
+    if (Math.abs(dx) < 56 || Math.abs(dy) > Math.abs(dx) * 1.4) return;
+    const tabs = Router.tabs;
+    const idx = tabs.indexOf(Router.current);
+    const next = dx < 0 ? tabs[(idx + 1) % tabs.length] : tabs[(idx - 1 + tabs.length) % tabs.length];
+    if (next === 'glossary') renderGlossary();
+    else if (next === 'me') renderMe();
+    else renderHome();
+    Router.go(next);
+  }, { passive: true });
 
   // 预览/截图钩子：?page=glossary | ?page=detail&card=m00 | ?page=me
   try {

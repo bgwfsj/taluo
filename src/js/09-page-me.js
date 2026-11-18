@@ -53,14 +53,14 @@ function renderMe() {
   });
   // 重置
   view.querySelector('#me-reset').addEventListener('click', function () {
-    const close = openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记和今日之牌，且不可恢复。建议先导出备份。</p>',
-      modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-      modalBtn('确认重置', 'btn-primary', function () {
-        closeModal();
-        Object.keys(STORE_KEYS).forEach(function (k) { localStorage.removeItem(STORE_KEYS[k]); });
-        renderMe();
-        toast('已重置全部数据');
-      }).outerHTML);
+    openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记和今日之牌，且不可恢复。建议先导出备份。</p>',
+      [modalBtn('取消', 'btn-ghost', closeModal),
+       modalBtn('确认重置', 'btn-danger', function () {
+         closeModal();
+         Object.keys(STORE_KEYS).forEach(function (k) { localStorage.removeItem(STORE_KEYS[k]); });
+         renderMe();
+         toast('已重置全部数据');
+       })]);
   });
 }
 

@@ -15,14 +15,16 @@ function renderDetail(cardId) {
     '<div class="page-head"><button class="back" id="detail-back">' + ICONS.back + '</button>' +
       '<h1>' + card.name + '</h1><span class="muted small" style="flex:none;">' + card.nameEn + '</span></div>' +
     '<div class="detail-card-wrap" id="detail-card-wrap">' + tarotCardHTML(card, { flipped: true, reversed: detailVisRev }) + '</div>' +
-    '<p style="text-align:center;font-size:.76rem;color:var(--ink-3);margin:2px 0 16px;" id="orient-tip">轻触牌面切换 正位 / 逆位 展示</p>' +
+    '<p class="orient-tip" id="orient-tip">轻触牌面切换正逆位</p>' +
     '<button class="learn-toggle' + (LearnedStore.has(card.id) ? ' done' : '') + '" id="learn-toggle">' +
       '<span id="learn-star">' + (LearnedStore.has(card.id) ? '★' : '☆') + '</span>' +
       '<span id="learn-label">' + (LearnedStore.has(card.id) ? '已标记学习' : '标记为已学习') + '</span></button>' +
     orientBlockHTML(card, 'upright') +
     orientBlockHTML(card, 'reversed') +
     '<div class="panel"><div class="panel-title">🖼️ 牌面描述</div><p style="font-size:.88rem;color:var(--ink-2);">' + esc(card.desc) + '</p></div>' +
-    '<div class="panel" id="notes-panel"><div class="panel-title">📝 备注</div>' + notesFormHTML(card.id) + '<div id="notes-list"></div></div>';
+    '<div class="panel" id="notes-panel"><div class="panel-title">📝 备注</div>' +
+      '<div class="notes-tip">轻点可编辑 · 左滑可删除</div>' +
+      notesFormHTML(card.id) + '<div id="notes-list"></div></div>';
 
   // 返回
   view.querySelector('#detail-back').addEventListener('click', function () { Router.back(); });
@@ -96,50 +98,85 @@ function renderNotes(cardId) {
     return (
       '<div class="note-item" data-ts="' + n.ts + '">' +
         '<div class="note-text">' + esc(n.text) + '</div>' +
-        '<div class="note-meta"><span>' + fmtDate(n.ts) + '</span>' +
-          '<span class="note-actions"><button class="note-edit">编辑</button><button class="note-del">删除</button></span>' +
-        '</div>' +
+        '<div class="note-meta"><span>' + fmtDate(n.ts) + '</span></div>' +
       '</div>'
     );
   }).join('');
-  list.querySelectorAll('.note-edit').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const ts = Number(btn.closest('.note-item').dataset.ts);
-      editNote(cardId, ts);
-    });
+  list.querySelectorAll('.note-item').forEach(function (item) {
+    bindNoteItem(cardId, item);
   });
-  list.querySelectorAll('.note-del').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const ts = Number(btn.closest('.note-item').dataset.ts);
-      const close = openModal('删除这条备注？', '<p style="color:var(--ink-2);font-size:.9rem;">删除后不可恢复。</p>',
-        modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-        modalBtn('删除', 'btn-primary', function () {
-          closeModal();
-          NotesStore.remove(cardId, ts);
-          renderNotes(cardId);
-          toast('备注已删除');
-        }).outerHTML);
-    });
+}
+
+function bindNoteItem(cardId, item) {
+  let suppressClick = false;
+  let startX = null, startY = null, curX = null;
+  item.addEventListener('touchstart', function (e) {
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; curX = startX;
+  }, { passive: true });
+  item.addEventListener('touchmove', function (e) {
+    curX = e.touches[0].clientX;
+    const dx = curX - startX;
+    if (dx < 0 && Math.abs(dx) > Math.abs(e.touches[0].clientY - startY)) {
+      item.style.transform = 'translateX(' + Math.max(dx, -70) + 'px)';
+      item.classList.add('swiping');
+    }
+  }, { passive: true });
+  item.addEventListener('touchend', function () {
+    const dx = curX - startX;
+    item.style.transform = '';
+    item.style.transition = 'transform .18s ease';
+    item.classList.remove('swiping');
+    setTimeout(function () { item.style.transition = ''; }, 200);
+    if (dx < -64) {
+      suppressClick = true;
+      deleteNote(cardId, Number(item.dataset.ts));
+      setTimeout(function () { suppressClick = false; }, 400);
+    }
   });
+  item.addEventListener('click', function () {
+    if (suppressClick) return;
+    editNote(cardId, Number(item.dataset.ts));
+  });
+}
+
+function deleteNote(cardId, ts) {
+  openModal('删除这条备注？', '<p style="color:var(--ink-2);font-size:.9rem;">删除后不可恢复。</p>',
+    [modalBtn('取消', 'btn-ghost', closeModal),
+     modalBtn('删除', 'btn-danger', function () {
+       closeModal();
+       NotesStore.remove(cardId, ts);
+       renderNotes(cardId);
+       toast('备注已删除');
+     })]);
 }
 
 function editNote(cardId, ts) {
   const note = NotesStore.forCard(cardId).find(function (n) { return n.ts === ts; });
   if (!note) return;
-  const close = openModal('编辑备注',
+  openModal('编辑备注',
     '<textarea id="edit-note-input" maxlength="' + NOTE_LIMIT + '" style="min-height:90px;">' + esc(note.text) + '</textarea>' +
     '<div class="char-count"><span id="edit-note-count">' + note.text.length + '</span> / ' + NOTE_LIMIT + '</div>',
-    modalBtn('取消', 'btn-ghost', closeModal).outerHTML +
-    modalBtn('保存', 'btn-primary', function () {
-      const input = document.getElementById('edit-note-input');
-      const text = input.value.trim();
-      if (!text) { toast('备注内容不能为空'); return; }
-      if (text.length > NOTE_LIMIT) { toast('每条备注最多 ' + NOTE_LIMIT + ' 字'); return; }
-      NotesStore.update(cardId, ts, text);
-      closeModal();
-      renderNotes(cardId);
-      toast('备注已更新');
-    }).outerHTML);
+    [modalBtn('取消', 'btn-ghost', closeModal),
+     modalBtn('保存', 'btn-primary', function () {
+       const input = document.getElementById('edit-note-input');
+       const text = input.value.trim();
+       if (!text) { toast('备注内容不能为空'); return; }
+       if (text.length > NOTE_LIMIT) { toast('每条备注最多 ' + NOTE_LIMIT + ' 字'); return; }
+       NotesStore.update(cardId, ts, text);
+       closeModal();
+       renderNotes(cardId);
+       toast('备注已更新');
+     })]);
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-ghost btn-block';
+  delBtn.style.marginTop = '10px';
+  delBtn.textContent = '删除此条备注';
+  delBtn.addEventListener('click', function () {
+    closeModal();
+    deleteNote(cardId, ts);
+  });
+  const sheet = document.querySelector('#modal-root .modal');
+  if (sheet) sheet.appendChild(delBtn);
   const input = document.getElementById('edit-note-input');
   const count = document.getElementById('edit-note-count');
   input.addEventListener('input', function () { count.textContent = String(input.value.length); });

@@ -36,11 +36,11 @@ const Router = {
 
 function tabbarHTML() {
   const items = [
-    { view: 'home', icon: ICONS.home, label: '今日' },
-    { view: 'glossary', icon: ICONS.book, label: '图鉴' },
-    { view: 'me', icon: ICONS.me, label: '我的' }
+    { view: 'home', label: '今' },
+    { view: 'glossary', label: '鉴' },
+    { view: 'me', label: '我' }
   ];
   return items.map(it =>
-    '<button data-view="' + it.view + '"><span class="ico">' + it.icon + '</span>' + it.label + '</button>'
+    '<button data-view="' + it.view + '"><span class="dot"></span>' + it.label + '</button>'
   ).join('');
 }

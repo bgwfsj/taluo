@@ -6,7 +6,7 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2200);
+  toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
 }
 
 function openModal(title, bodyHTML, actions) {
@@ -15,9 +15,13 @@ function openModal(title, bodyHTML, actions) {
   mask.className = 'modal-mask';
   mask.innerHTML =
     '<div class="modal" role="dialog" aria-modal="true">' +
+    '<div class="sheet-handle"></div>' +
     '<h3>' + title + '</h3>' + bodyHTML +
-    '<div class="modal-actions" style="display:flex;gap:10px;margin-top:16px;">' + (actions || '') + '</div>' +
+    '<div class="modal-actions"></div>' +
     '</div>';
+  const actionsEl = mask.querySelector('.modal-actions');
+  if (Array.isArray(actions)) { actions.forEach(function (a) { if (a) actionsEl.appendChild(a); }); }
+  else if (actions) { actionsEl.appendChild(actions); }
   root.appendChild(mask);
   mask.addEventListener('click', function (e) {
     if (e.target === mask) closeModal();
