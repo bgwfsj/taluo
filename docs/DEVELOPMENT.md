@@ -20,7 +20,7 @@ _tools/
   verify.ps1         一键验证：构建 + JS 语法 + 无头 Chrome 回归
   build-release.ps1  同步 assets → Gradle assembleRelease（正式签名）
   verify-apk.ps1     产物校验：签名证书 / 包内页面 hash / 版本号
-  gen-icons.ps1      由牌面图生成启动图标
+  gen-icons.js       由牌面图生成启动图标（抠图 + 深色底合成）
   fetch-images.ps1   从 Wikimedia Commons 下载 78 张 RWS 原图 + 牌背（需要 tests/imageinfo.json）
   compress-images.ps1 压缩为 300px JPEG（输出 tests/images-opt/）
   gen-card-images.js 由压缩图生成 src/js/data/15-card-images.js（base64 内联）
