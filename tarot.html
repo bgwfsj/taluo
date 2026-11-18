@@ -358,6 +358,18 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 .card-front.rev { transform: rotate(180deg); }
 .mini-card.rev .mini-img { transform: rotate(180deg); }
 
+/* 备份列表 */
+.backup-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.backup-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.backup-info { min-width: 0; font-size: .84rem; color: var(--ink-2); word-break: break-all; }
+.backup-info .muted { font-size: .74rem; margin-top: 2px; }
+.backup-actions { display: flex; gap: 6px; flex: none; }
+.backup-actions .btn { padding: 6px 12px; font-size: .78rem; }
+
 /* ===== 页面（airy-minimal-ui）===== */
 /* 今日 */
 .hero { text-align: center; padding: 24px 0 4px; }
@@ -451,8 +463,9 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 // ===== 常量 =====
 const APP_INFO = {
   name: '塔罗之语',
-  version: '0.3.3',
+  version: '0.4.0',
   changelog: [
+    { v: '0.4.0', date: '2026-11-18', items: ['打包安卓 App：新增在线更新（打开自动检测，更新前自动备份）','新增存档备份：本地保留最近 2 份，可恢复/删除'] },
     { v: '0.3.3', date: '2026-11-18', items: ['图鉴支持按类型折叠分组（默认折叠）'] },
     { v: '0.3.2', date: '2026-11-18', items: ['修复图鉴/结果页进入详情白屏：跳转时未渲染详情页'] },
     { v: '0.3.1', date: '2026-11-18', items: ['移除抽牌抖动/翻牌动画，点击即时呈现今日之牌'] },
@@ -481,7 +494,8 @@ const SUITS = {
 const STORE_KEYS = {
   notes: 'tarot.notes',
   learned: 'tarot.learned',
-  today: 'tarot.today'
+  today: 'tarot.today',
+  backups: 'tarot.backups'
 };
 
 const NOTE_LIMIT = 500;
@@ -560,6 +574,136 @@ const TodayStore = {
   set(cardId, orientation) { storeSet(STORE_KEYS.today, { date: todayKey(), cardId, orientation }); },
   clear() { localStorage.removeItem(STORE_KEYS.today); }
 };
+
+// ===== 原生桥（WebView 壳）与备份/更新 =====
+const NativeBridge = {
+  ok: typeof window.AppNative !== 'undefined' && !!window.AppNative,
+  cbSeq: 0,
+  call(method, args, cb) {
+    if (!this.ok || typeof window.AppNative[method] !== 'function') {
+      if (cb) cb({ ok: false, error: 'native-unavailable' });
+      return;
+    }
+    const cbId = 'cb' + (++this.cbSeq);
+    window['__bridgeCb' + cbId] = cb || function () {};
+    try {
+      window.AppNative[method].apply(window.AppNative, (args || []).concat(cbId));
+    } catch (e) {
+      delete window['__bridgeCb' + cbId];
+      if (cb) cb({ ok: false, error: String(e) });
+    }
+  },
+  onResult(cbId, payload) {
+    const fn = window['__bridgeCb' + cbId];
+    if (!fn) return;
+    delete window['__bridgeCb' + cbId];
+    try { fn(payload); } catch (e) { console.warn('bridge cb', e); }
+  }
+};
+window.onBridgeResult = function (cbId, payload) { NativeBridge.onResult(cbId, payload); };
+
+function buildBackupData() {
+  return {
+    app: APP_INFO.name,
+    version: APP_INFO.version,
+    exportedAt: new Date().toISOString(),
+    notes: storeGet(STORE_KEYS.notes, {}),
+    learned: storeGet(STORE_KEYS.learned, []),
+    today: storeGet(STORE_KEYS.today, null)
+  };
+}
+function backupStamp() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+}
+function backupMeta(b) {
+  return { name: b.name, date: b.date, size: b.size };
+}
+
+// 存档备份：原生优先（文件存两份），浏览器预览降级到 localStorage（同样只留两份）
+const Backups = {
+  save(cb) {
+    const json = JSON.stringify(buildBackupData());
+    if (NativeBridge.ok) {
+      NativeBridge.call('backupSave', [json], function (r) {
+        if (r && r.ok) cb && cb(null, (r.backups || []).map(backupMeta));
+        else cb && cb((r && r.error) || 'native-backup-failed');
+      });
+      return;
+    }
+    const backups = storeGet(STORE_KEYS.backups, []);
+    backups.unshift({ name: '塔罗备份-' + backupStamp() + '.json', date: Date.now(), size: json.length, data: json });
+    while (backups.length > 2) backups.pop();
+    storeSet(STORE_KEYS.backups, backups);
+    cb && cb(null, backups.map(backupMeta));
+  },
+  list(cb) {
+    if (NativeBridge.ok) {
+      NativeBridge.call('backupList', [], function (r) {
+        if (r && r.ok) cb && cb(null, (r.backups || []).map(backupMeta));
+        else cb && cb((r && r.error) || 'native-backup-list-failed');
+      });
+      return;
+    }
+    cb && cb(null, storeGet(STORE_KEYS.backups, []).map(backupMeta));
+  },
+  restore(name, cb) {
+    if (NativeBridge.ok) {
+      NativeBridge.call('backupRestore', [name], function (r) {
+        if (r && r.ok && r.content) cb && cb(null, r.content);
+        else cb && cb((r && r.error) || 'native-backup-restore-failed');
+      });
+      return;
+    }
+    const b = storeGet(STORE_KEYS.backups, []).find(x => x.name === name);
+    cb && cb(b ? null : 'backup-not-found', b ? b.data : null);
+  },
+  remove(name, cb) {
+    if (NativeBridge.ok) {
+      NativeBridge.call('backupDelete', [name], function (r) {
+        if (r && r.ok) cb && cb(null, (r.backups || []).map(backupMeta));
+        else cb && cb((r && r.error) || 'native-backup-delete-failed');
+      });
+      return;
+    }
+    const backups = storeGet(STORE_KEYS.backups, []).filter(x => x.name !== name);
+    storeSet(STORE_KEYS.backups, backups);
+    cb && cb(null, backups.map(backupMeta));
+  }
+};
+
+// 在线更新：仅打包后（原生桥可用）自动检测；浏览器预览提示
+function checkForUpdate(manual) {
+  if (!NativeBridge.ok) {
+    if (manual) toast('当前是网页预览，打包成 App 后会自动检测更新');
+    return;
+  }
+  NativeBridge.call('checkUpdate', [], function (r) {
+    if (!r || !r.ok) { if (manual) toast((r && r.error) || '检查更新失败'); return; }
+    if (!r.hasUpdate) { if (manual) toast('已是最新版本 v' + APP_INFO.version); return; }
+    showUpdateSheet(r);
+  });
+}
+
+function showUpdateSheet(r) {
+  openModal('发现新版本 v' + r.version,
+    '<p style="color:var(--ink-2);font-size:.9rem;line-height:1.7;white-space:pre-wrap;">' + esc((r.notes || '更新内容见发布说明')) + '</p>' +
+    '<p class="muted small" style="margin-top:8px;">更新前会自动备份存档（仅保留最近 2 份）</p>',
+    [modalBtn('稍后', 'btn-ghost', closeModal),
+     modalBtn('立即更新', 'btn-primary', function () { closeModal(); startUpdate(r); })]);
+}
+
+function startUpdate(r) {
+  toast('正在备份存档…');
+  Backups.save(function (err) {
+    if (err) { toast('备份失败，已取消更新'); return; }
+    NativeBridge.call('startUpdate', [r.url || '', r.sha256 || ''], function (res) {
+      if (res && res.ok) toast('已开始下载更新');
+      else toast((res && res.error) || '更新启动失败');
+    });
+  });
+}
 
 // ===== UI 基础组件 =====
 let toastTimer = null;
@@ -1063,6 +1207,11 @@ function renderMe() {
       '<button class="me-row" id="me-import"><span class="ico">📥</span><span class="txt">导入备份<span class="sub">从备份文件恢复数据（会覆盖当前数据）</span></span><span class="arrow">›</span></button>' +
       '<button class="me-row" id="me-reset"><span class="ico">🧹</span><span class="txt">重置全部数据<span class="sub">清空备注、学习标记与今日之牌</span></span><span class="arrow">›</span></button>' +
     '</div>' +
+    '<div class="panel"><div class="panel-title">💾 备份与更新</div>' +
+      '<button class="me-row" id="me-backup-now"><span class="ico">🛡️</span><span class="txt">立即备份<span class="sub">存档保存到本地，只保留最近 2 份</span></span><span class="arrow">›</span></button>' +
+      '<button class="me-row" id="me-backup-list"><span class="ico">🗃️</span><span class="txt">本地备份<span class="sub">查看 / 恢复 / 删除备份</span></span><span class="arrow">›</span></button>' +
+      '<button class="me-row" id="me-check-update"><span class="ico">🔄</span><span class="txt">检查更新<span class="sub">打开 App 时会自动检测</span></span><span class="arrow">›</span></button>' +
+    '</div>' +
     '<div class="panel"><div class="panel-title">ℹ️ 关于</div>' +
       '<div class="me-row" style="cursor:default;"><span class="ico">🔮</span><span class="txt">' + APP_INFO.name + '<span class="sub">清爽简约 · 离线可用 · 数据只存本地</span></span><span style="color:var(--ink-3);font-size:.82rem;">v' + APP_INFO.version + '</span></div>' +
       '<div id="me-changelog"></div>' +
@@ -1092,6 +1241,15 @@ function renderMe() {
     });
     input.click();
   });
+  // 备份与更新
+  view.querySelector('#me-backup-now').addEventListener('click', function () {
+    Backups.save(function (err, backups) {
+      if (err) { toast('备份失败'); return; }
+      toast('备份已保存 ✓');
+    });
+  });
+  view.querySelector('#me-backup-list').addEventListener('click', function () { renderBackupSheet(); });
+  view.querySelector('#me-check-update').addEventListener('click', function () { checkForUpdate(true); });
   // 重置
   view.querySelector('#me-reset').addEventListener('click', function () {
     openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记和今日之牌，且不可恢复。建议先导出备份。</p>',
@@ -1142,6 +1300,60 @@ function importBackup(text) {
   } catch (e) {
     toast('备份文件解析失败');
   }
+}
+
+function renderBackupSheet() {
+  Backups.list(function (err, backups) {
+    if (err) { toast('读取备份失败'); return; }
+    if (!backups.length) {
+      openModal('本地备份', '<p class="muted small" style="padding:8px 0;">还没有备份，点「立即备份」保存一份存档吧。</p>', [modalBtn('知道了', 'btn-ghost', closeModal)]);
+      return;
+    }
+    const rows = backups.map(function (b) {
+      const size = b.size > 1024 * 1024 ? (b.size / 1024 / 1024).toFixed(1) + ' MB' : Math.max(1, Math.round(b.size / 1024)) + ' KB';
+      return '<div class="backup-row">' +
+        '<div class="backup-info"><div>' + esc(b.name) + '</div><div class="muted small">' + fmtDate(b.date) + ' · ' + size + '</div></div>' +
+        '<div class="backup-actions">' +
+          '<button class="btn btn-ghost" data-b-restore="' + esc(b.name) + '">恢复</button>' +
+          '<button class="btn btn-ghost" data-b-delete="' + esc(b.name) + '" style="color:var(--danger,#d75a5a);">删除</button>' +
+        '</div></div>';
+    }).join('');
+    const wrap = document.createElement('div');
+    wrap.innerHTML = rows;
+    openModal('本地备份', '<div class="backup-list">' + rows + '</div>',
+      [modalBtn('关闭', 'btn-ghost', closeModal)]);
+    document.querySelectorAll('[data-b-restore]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const name = btn.dataset.bRestore;
+        closeModal();
+        openModal('恢复备份？', '<p style="color:var(--ink-2);font-size:.9rem;">将用「' + esc(name) + '」覆盖当前备注、学习标记与今日之牌。</p>',
+          [modalBtn('取消', 'btn-ghost', closeModal),
+           modalBtn('确认恢复', 'btn-primary', function () {
+             closeModal();
+             Backups.restore(name, function (err2, content) {
+               if (err2 || !content) { toast('恢复失败'); return; }
+               importBackup(content);
+             });
+           })]);
+      });
+    });
+    document.querySelectorAll('[data-b-delete]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const name = btn.dataset.bDelete;
+        closeModal();
+        openModal('删除备份？', '<p style="color:var(--ink-2);font-size:.9rem;">将删除「' + esc(name) + '」，不可恢复。</p>',
+          [modalBtn('取消', 'btn-ghost', closeModal),
+           modalBtn('删除', 'btn-danger', function () {
+             closeModal();
+             Backups.remove(name, function (err2) {
+               if (err2) { toast('删除失败'); return; }
+               toast('已删除');
+               renderBackupSheet();
+             });
+           })]);
+      });
+    });
+  });
 }
 
 // ===== 小阿卡纳"今日六维"生成模板 =====
@@ -2366,7 +2578,7 @@ function runSelfTest() {
     if (!document.getElementById('note-input') || !document.getElementById('learn-toggle')) fail('ui-detail'); else pass('ui-detail');
 
     Router.go('me'); renderMe();
-    if (!document.getElementById('me-export') || !document.getElementById('me-import')) fail('ui-me'); else pass('ui-me');
+    if (!document.getElementById('me-export') || !document.getElementById('me-import') || !document.getElementById('me-backup-now') || !document.getElementById('me-backup-list') || !document.getElementById('me-check-update')) fail('ui-me'); else pass('ui-me');
   } catch (e) { fail('ui-exception', e.message); }
 
   // 4) 交互冒烟（弹层按钮绑定 / 重新抽取 / 备注编辑保存）
@@ -2423,6 +2635,23 @@ function runSelfTest() {
     storeSet(STORE_KEYS.learned, orig.learned);
     if (orig.today) storeSet(STORE_KEYS.today, orig.today); else localStorage.removeItem(STORE_KEYS.today);
   } catch (e) { fail('interaction-exception', e.message); }
+
+  // 4.5) 备份（浏览器预览降级：localStorage 只留 2 份，可恢复）
+  try {
+    const origB = storeGet(STORE_KEYS.backups, []);
+    localStorage.removeItem(STORE_KEYS.backups);
+    Backups.save(function () {});
+    Backups.save(function () {});
+    Backups.save(function () {});
+    const list = storeGet(STORE_KEYS.backups, []);
+    if (list.length !== 2) fail('backup-keep2', 'expected 2, got ' + list.length); else pass('backup-keep2');
+    let restored = null;
+    Backups.restore(list[1].name, function (err, content) {
+      if (!err && content) { try { const d = JSON.parse(content); if (d.app === APP_INFO.name) restored = true; } catch (e) {} }
+    });
+    if (!restored) fail('backup-restore'); else pass('backup-restore');
+    storeSet(STORE_KEYS.backups, origB);
+  } catch (e) { fail('backup-exception', e.message); }
 
   const fails = results.filter(function (r) { return r.indexOf('FAIL') === 0; });
   const div = document.createElement('div');
@@ -2490,6 +2719,9 @@ function boot() {
       Router.go('home');
     }
   } catch (e) { console.warn('preview hook', e); }
+
+  // 打包后自动检测更新
+  if (NativeBridge.ok) setTimeout(function () { checkForUpdate(false); }, 800);
 
   if (location.search.indexOf('selftest') >= 0) setTimeout(runSelfTest, 150);
   if (location.search.indexOf('qa') >= 0) setTimeout(runQA, 200);

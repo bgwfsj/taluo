@@ -7,3 +7,10 @@ _tools/_patch*.js
 # 可再生图片资源（由 _tools 脚本从 Wikimedia 下载/压缩生成）
 tests/images/
 tests/images-opt/
+# 签名密钥与配置（绝不提交）
+keystore/
+TarotApk/app/signing.properties
+bu-*.apk
+# Gradle 构建产物
+TarotApk/.gradle/
+TarotApk/app/build/

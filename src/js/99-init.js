@@ -56,6 +56,9 @@ function boot() {
     }
   } catch (e) { console.warn('preview hook', e); }
 
+  // 打包后自动检测更新
+  if (NativeBridge.ok) setTimeout(function () { checkForUpdate(false); }, 800);
+
   if (location.search.indexOf('selftest') >= 0) setTimeout(runSelfTest, 150);
   if (location.search.indexOf('qa') >= 0) setTimeout(runQA, 200);
 

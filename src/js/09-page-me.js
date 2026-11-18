@@ -22,6 +22,11 @@ function renderMe() {
       '<button class="me-row" id="me-import"><span class="ico">📥</span><span class="txt">导入备份<span class="sub">从备份文件恢复数据（会覆盖当前数据）</span></span><span class="arrow">›</span></button>' +
       '<button class="me-row" id="me-reset"><span class="ico">🧹</span><span class="txt">重置全部数据<span class="sub">清空备注、学习标记与今日之牌</span></span><span class="arrow">›</span></button>' +
     '</div>' +
+    '<div class="panel"><div class="panel-title">💾 备份与更新</div>' +
+      '<button class="me-row" id="me-backup-now"><span class="ico">🛡️</span><span class="txt">立即备份<span class="sub">存档保存到本地，只保留最近 2 份</span></span><span class="arrow">›</span></button>' +
+      '<button class="me-row" id="me-backup-list"><span class="ico">🗃️</span><span class="txt">本地备份<span class="sub">查看 / 恢复 / 删除备份</span></span><span class="arrow">›</span></button>' +
+      '<button class="me-row" id="me-check-update"><span class="ico">🔄</span><span class="txt">检查更新<span class="sub">打开 App 时会自动检测</span></span><span class="arrow">›</span></button>' +
+    '</div>' +
     '<div class="panel"><div class="panel-title">ℹ️ 关于</div>' +
       '<div class="me-row" style="cursor:default;"><span class="ico">🔮</span><span class="txt">' + APP_INFO.name + '<span class="sub">清爽简约 · 离线可用 · 数据只存本地</span></span><span style="color:var(--ink-3);font-size:.82rem;">v' + APP_INFO.version + '</span></div>' +
       '<div id="me-changelog"></div>' +
@@ -51,6 +56,15 @@ function renderMe() {
     });
     input.click();
   });
+  // 备份与更新
+  view.querySelector('#me-backup-now').addEventListener('click', function () {
+    Backups.save(function (err, backups) {
+      if (err) { toast('备份失败'); return; }
+      toast('备份已保存 ✓');
+    });
+  });
+  view.querySelector('#me-backup-list').addEventListener('click', function () { renderBackupSheet(); });
+  view.querySelector('#me-check-update').addEventListener('click', function () { checkForUpdate(true); });
   // 重置
   view.querySelector('#me-reset').addEventListener('click', function () {
     openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记和今日之牌，且不可恢复。建议先导出备份。</p>',
@@ -101,4 +115,58 @@ function importBackup(text) {
   } catch (e) {
     toast('备份文件解析失败');
   }
+}
+
+function renderBackupSheet() {
+  Backups.list(function (err, backups) {
+    if (err) { toast('读取备份失败'); return; }
+    if (!backups.length) {
+      openModal('本地备份', '<p class="muted small" style="padding:8px 0;">还没有备份，点「立即备份」保存一份存档吧。</p>', [modalBtn('知道了', 'btn-ghost', closeModal)]);
+      return;
+    }
+    const rows = backups.map(function (b) {
+      const size = b.size > 1024 * 1024 ? (b.size / 1024 / 1024).toFixed(1) + ' MB' : Math.max(1, Math.round(b.size / 1024)) + ' KB';
+      return '<div class="backup-row">' +
+        '<div class="backup-info"><div>' + esc(b.name) + '</div><div class="muted small">' + fmtDate(b.date) + ' · ' + size + '</div></div>' +
+        '<div class="backup-actions">' +
+          '<button class="btn btn-ghost" data-b-restore="' + esc(b.name) + '">恢复</button>' +
+          '<button class="btn btn-ghost" data-b-delete="' + esc(b.name) + '" style="color:var(--danger,#d75a5a);">删除</button>' +
+        '</div></div>';
+    }).join('');
+    const wrap = document.createElement('div');
+    wrap.innerHTML = rows;
+    openModal('本地备份', '<div class="backup-list">' + rows + '</div>',
+      [modalBtn('关闭', 'btn-ghost', closeModal)]);
+    document.querySelectorAll('[data-b-restore]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const name = btn.dataset.bRestore;
+        closeModal();
+        openModal('恢复备份？', '<p style="color:var(--ink-2);font-size:.9rem;">将用「' + esc(name) + '」覆盖当前备注、学习标记与今日之牌。</p>',
+          [modalBtn('取消', 'btn-ghost', closeModal),
+           modalBtn('确认恢复', 'btn-primary', function () {
+             closeModal();
+             Backups.restore(name, function (err2, content) {
+               if (err2 || !content) { toast('恢复失败'); return; }
+               importBackup(content);
+             });
+           })]);
+      });
+    });
+    document.querySelectorAll('[data-b-delete]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const name = btn.dataset.bDelete;
+        closeModal();
+        openModal('删除备份？', '<p style="color:var(--ink-2);font-size:.9rem;">将删除「' + esc(name) + '」，不可恢复。</p>',
+          [modalBtn('取消', 'btn-ghost', closeModal),
+           modalBtn('删除', 'btn-danger', function () {
+             closeModal();
+             Backups.remove(name, function (err2) {
+               if (err2) { toast('删除失败'); return; }
+               toast('已删除');
+               renderBackupSheet();
+             });
+           })]);
+      });
+    });
+  });
 }

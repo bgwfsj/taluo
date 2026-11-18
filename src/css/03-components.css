@@ -199,3 +199,15 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 /* 逆位视觉（内容旋转 180°） */
 .card-front.rev { transform: rotate(180deg); }
 .mini-card.rev .mini-img { transform: rotate(180deg); }
+
+/* 备份列表 */
+.backup-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.backup-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.backup-info { min-width: 0; font-size: .84rem; color: var(--ink-2); word-break: break-all; }
+.backup-info .muted { font-size: .74rem; margin-top: 2px; }
+.backup-actions { display: flex; gap: 6px; flex: none; }
+.backup-actions .btn { padding: 6px 12px; font-size: .78rem; }

@@ -11,14 +11,22 @@ src/                 源码（只改这里，生成文件不直接编辑）
   js/                按模块拆分脚本，文件名数字前缀决定合并顺序
     data/            塔罗牌数据（10-dims 模板、11-12 大阿卡纳、15 牌面图片、20-23 小阿卡纳）
 tarot.html           构建产物：自包含单文件（打包时同步到 APK assets/index.html）
+TarotApk/            安卓 WebView 壳工程（app/src/main/assets/index.html 为打包页面）
+  app/build.gradle   versionCode / versionName、release 签名配置（signing.properties 不入库）
+  app/src/main/java/com/bgwfsj/tarot/  MainActivity / Bridge / BackupStore / Updater / Notifications
+  app/src/main/res/  图标（圣杯国王，mipmap-*）+ strings + FileProvider paths
 _tools/
   build.js           合并 src → tarot.html，检查占位符与内联事件
   verify.ps1         一键验证：构建 + JS 语法 + 无头 Chrome 回归
+  build-release.ps1  同步 assets → Gradle assembleRelease（正式签名）
+  verify-apk.ps1     产物校验：签名证书 / 包内页面 hash / 版本号
+  gen-icons.ps1      由牌面图生成启动图标
   fetch-images.ps1   从 Wikimedia Commons 下载 78 张 RWS 原图 + 牌背（需要 tests/imageinfo.json）
   compress-images.ps1 压缩为 300px JPEG（输出 tests/images-opt/）
   gen-card-images.js 由压缩图生成 src/js/data/15-card-images.js（base64 内联）
   shots.ps1          无头 Chrome 生成各页面手机视口截图
 tests/               回归产物与截图（imageinfo.json、自检 dump、shots/）
+keystore/            release 签名密钥（git 忽略，含 README.txt 记录口令）
 docs/                本文档 + HANDOFF.md
 ```
 
@@ -27,6 +35,8 @@ docs/                本文档 + HANDOFF.md
 ```powershell
 node _tools\build.js                     # 构建单文件
 powershell -NoProfile -ExecutionPolicy Bypass -File _tools\verify.ps1   # 一键验证
+powershell -NoProfile -ExecutionPolicy Bypass -File _tools\build-release.ps1  # 打包 APK
+powershell -NoProfile -ExecutionPolicy Bypass -File _tools\verify-apk.ps1     # 校验 APK
 
 # 更新牌面图片流水线（网络下载 → 压缩 → 生成 base64 模块）
 powershell -NoProfile -ExecutionPolicy Bypass -File _tools\fetch-images.ps1
@@ -75,6 +85,7 @@ node _tools\gen-card-images.js
 | `tarot.notes` | `{ cardId: [{text, ts}] }`，按时间倒序 |
 | `tarot.learned` | 已学习牌 id 数组 |
 | `tarot.today` | `{date, cardId, orientation}` 当日抽牌 |
+| `tarot.backups` | 浏览器预览降级的备份列表（原生 App 用文件存储，只留 2 份） |
 
 ## 回归验证
 
@@ -82,9 +93,16 @@ node _tools\gen-card-images.js
 结果写入 `<div id="selftest" data-result="PASS|FAIL">`，由 verify.ps1 用无头 Chrome dump 后断言。
 `?qa` 输出布局度量（横向溢出、背景色、关键元素位置）；`?page=glossary|detail&card=|me|today` 可直达页面预览。
 
-## 封装 APK（下一步）
+## 原生桥 / 备份 / 更新架构
 
-1. `Copy-Item tarot.html → <壳>/app/src/main/assets/index.html`，校验 SHA-256 与根目录一致。
-2. MainActivity 用 `loadUrl("file:///android_asset/index.html")`，开 JavaScript + DOM storage。
-3. 系统返回键通过 JS 桥调用 `window.taOnBack`（已预留）。
-4. 按 `html-to-apk` 技能的 packaging.md 递增 versionCode/versionName、正式签名、发版。
+- **JS 桥**：原生以 `@JavascriptInterface` 挂到 `window.AppNative`；JS 统一走 `NativeBridge.call`，回调经 `window.onBridgeResult(cbId, payload)` 回传。浏览器预览时 `NativeBridge.ok=false`，自动降级（备份存 localStorage、更新提示“打包后可用”）。
+- **备份**：`Backups.save/list/restore/remove` 原生优先（`filesDir/backups`，只保留最近 2 份），浏览器降级 localStorage。我的页“备份与更新”面板可查看/恢复/删除。
+- **在线更新**：打开 App 后 JS 自动调 `checkUpdate` → 原生查 GitHub Releases（API 优先，403/拦截自动降级网页接口 expanded_assets）→ 有新版本时 JS 弹底部 sheet → “立即更新”先 `backups.save`（失败则取消）→ `startUpdate` 下载（通知栏进度）→ SHA-256 校验（API 通道有 digest 时）→ FileProvider 调系统安装器。
+- **发版**：`Updater.java` 的 OWNER/REPO 指向 GitHub `bgwfsj/taluo`；Release 附件命名 `bu-<版本>.apk`（纯 ASCII）。签名密钥 `keystore/tarot-release.jks`（git 忽略，永久不变，换证书会要求卸载重装）。
+
+## 发版清单（每版必做）
+
+1. 同步版本号：`src/js/01-const.js`（APP_INFO.version + changelog）、`TarotApk/app/build.gradle`（versionCode+1、versionName）、`MainActivity.VERSION_NAME`。
+2. `verify.ps1` 页面回归全 PASS → `build-release.ps1` 打包 → `verify-apk.ps1` 校验（签名证书 SHA-256 与上版一致、包内页面 hash 一致、版本号正确）。
+3. 复制产物：`塔罗.apk`（当前）、`塔罗-v<版本>.apk`（留档）、`bu-<版本>.apk`（上传件）；旧 `塔罗-v<上一版>.apk` 移入 `历史版本/发布包归档/`。
+4. git add/commit/tag v<版本> → push → GitHub Release（上传 `bu-<版本>.apk`）。

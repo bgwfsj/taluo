@@ -1,8 +1,9 @@
 // ===== 常量 =====
 const APP_INFO = {
   name: '塔罗之语',
-  version: '0.3.3',
+  version: '0.4.0',
   changelog: [
+    { v: '0.4.0', date: '2026-11-18', items: ['打包安卓 App：新增在线更新（打开自动检测，更新前自动备份）','新增存档备份：本地保留最近 2 份，可恢复/删除'] },
     { v: '0.3.3', date: '2026-11-18', items: ['图鉴支持按类型折叠分组（默认折叠）'] },
     { v: '0.3.2', date: '2026-11-18', items: ['修复图鉴/结果页进入详情白屏：跳转时未渲染详情页'] },
     { v: '0.3.1', date: '2026-11-18', items: ['移除抽牌抖动/翻牌动画，点击即时呈现今日之牌'] },
@@ -31,7 +32,8 @@ const SUITS = {
 const STORE_KEYS = {
   notes: 'tarot.notes',
   learned: 'tarot.learned',
-  today: 'tarot.today'
+  today: 'tarot.today',
+  backups: 'tarot.backups'
 };
 
 const NOTE_LIMIT = 500;

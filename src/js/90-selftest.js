@@ -101,7 +101,7 @@ function runSelfTest() {
     if (!document.getElementById('note-input') || !document.getElementById('learn-toggle')) fail('ui-detail'); else pass('ui-detail');
 
     Router.go('me'); renderMe();
-    if (!document.getElementById('me-export') || !document.getElementById('me-import')) fail('ui-me'); else pass('ui-me');
+    if (!document.getElementById('me-export') || !document.getElementById('me-import') || !document.getElementById('me-backup-now') || !document.getElementById('me-backup-list') || !document.getElementById('me-check-update')) fail('ui-me'); else pass('ui-me');
   } catch (e) { fail('ui-exception', e.message); }
 
   // 4) 交互冒烟（弹层按钮绑定 / 重新抽取 / 备注编辑保存）
@@ -158,6 +158,23 @@ function runSelfTest() {
     storeSet(STORE_KEYS.learned, orig.learned);
     if (orig.today) storeSet(STORE_KEYS.today, orig.today); else localStorage.removeItem(STORE_KEYS.today);
   } catch (e) { fail('interaction-exception', e.message); }
+
+  // 4.5) 备份（浏览器预览降级：localStorage 只留 2 份，可恢复）
+  try {
+    const origB = storeGet(STORE_KEYS.backups, []);
+    localStorage.removeItem(STORE_KEYS.backups);
+    Backups.save(function () {});
+    Backups.save(function () {});
+    Backups.save(function () {});
+    const list = storeGet(STORE_KEYS.backups, []);
+    if (list.length !== 2) fail('backup-keep2', 'expected 2, got ' + list.length); else pass('backup-keep2');
+    let restored = null;
+    Backups.restore(list[1].name, function (err, content) {
+      if (!err && content) { try { const d = JSON.parse(content); if (d.app === APP_INFO.name) restored = true; } catch (e) {} }
+    });
+    if (!restored) fail('backup-restore'); else pass('backup-restore');
+    storeSet(STORE_KEYS.backups, origB);
+  } catch (e) { fail('backup-exception', e.message); }
 
   const fails = results.filter(function (r) { return r.indexOf('FAIL') === 0; });
   const div = document.createElement('div');

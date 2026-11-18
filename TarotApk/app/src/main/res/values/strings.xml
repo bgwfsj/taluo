@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">塔罗之语</string>
+    <string name="update_channel_name">版本更新</string>
+    <string name="update_downloading">正在下载更新</string>
+    <string name="update_ready">更新已就绪，点击安装</string>
+    <string name="update_failed">更新下载失败</string>
+</resources>
