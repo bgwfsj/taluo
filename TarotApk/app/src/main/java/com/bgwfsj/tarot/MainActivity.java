@@ -12,7 +12,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
-    public static final String VERSION_NAME = "0.4.3";
+    public static final String VERSION_NAME = "0.4.4";
     private WebView web;
 
     @SuppressLint("SetJavaScriptEnabled")

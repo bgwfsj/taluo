@@ -99,6 +99,8 @@ img.onload = () => {
         g.arc(s/2, s/2, s/2, 0, Math.PI*2);
         g.clip();
       }
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, s, s);
       const fit = s * 0.94;
       const scale = Math.min(fit/bw, fit/bh);
       const dw = bw*scale, dh = bh*scale;
@@ -134,4 +136,4 @@ for (const key of Object.keys(sizes)) {
 }
 fs.unlinkSync(procHtml);
 fs.unlinkSync(dumpFile);
-console.log('icons regenerated (figure only, no edge strips)');
+console.log('icons regenerated (white background, figure only)');
