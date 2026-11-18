@@ -1,0 +1,5 @@
+tests/selftest-dump.html
+tests/qa-dump.html
+tests/shots/
+_tools/_check.js
+_tools/_patch*.js

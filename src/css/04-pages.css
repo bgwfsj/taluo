@@ -1,0 +1,68 @@
+/* ===== 今日 ===== */
+.hero { text-align: center; padding: 18px 0 8px; }
+.hero h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: .06em; }
+.hero .sub { color: var(--ink-3); font-size: .86rem; margin-top: 4px; }
+.draw-zone { display: flex; flex-direction: column; align-items: center; padding: 22px 0 6px; }
+.draw-card-wrap { width: 210px; margin: 0 auto; }
+.draw-hint {
+  margin-top: 18px; font-size: .86rem; color: var(--ink-2);
+  display: flex; align-items: center; gap: 8px;
+}
+.draw-hint .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1.6s ease infinite; }
+@keyframes pulse { 0%,100%{ opacity: 1; transform: scale(1) } 50%{ opacity: .4; transform: scale(.7) } }
+
+/* 抽牌结果 */
+.result-block { margin-top: 8px; }
+.orientation-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 999px; font-size: .82rem; font-weight: 600; color: #fff;
+}
+.orientation-badge.upright { background: var(--upright); }
+.orientation-badge.reversed { background: var(--reversed); }
+.result-title { text-align: center; margin: 10px 0 4px; }
+.result-title .cn { font-size: 1.3rem; font-weight: 700; }
+.result-title .en { font-size: .8rem; color: var(--ink-3); letter-spacing: .05em; }
+.summary-text { font-size: .92rem; color: var(--ink-2); text-align: center; padding: 0 6px; }
+.section-title {
+  font-size: .9rem; font-weight: 700; margin: 18px 0 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: var(--gold); }
+.re-draw { margin-top: 20px; text-align: center; }
+.re-draw button { color: var(--ink-3); font-size: .8rem; text-decoration: underline; }
+
+/* ===== 图鉴 ===== */
+.search-box { position: relative; margin: 4px 0 12px; }
+.search-box input { padding-left: 38px; }
+.search-box .mag { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: .95rem; }
+
+/* ===== 牌义详情 ===== */
+.detail-card-wrap { width: 190px; margin: 4px auto 18px; }
+.detail-orientations { margin-top: 4px; }
+.orient-block { margin-bottom: 14px; }
+.orient-block .orient-head {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; font-size: .95rem;
+}
+.orient-block .orient-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+.orient-block .orient-head .dot.upright { background: var(--upright); }
+.orient-block .orient-head .dot.reversed { background: var(--reversed); }
+.orient-block .orient-summary { font-size: .88rem; color: var(--ink-2); margin-bottom: 8px; }
+.learn-toggle {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  justify-content: center; padding: 12px; border-radius: var(--radius-sm);
+  border: 1px dashed var(--gold); color: var(--ink-2); font-size: .9rem; font-weight: 600;
+}
+.learn-toggle.done { background: #fbf7ee; border-style: solid; color: #9a7a3f; }
+
+/* ===== 我的 ===== */
+.me-row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 14px 0; border-bottom: 1px solid var(--line);
+  font-size: .92rem; color: var(--ink);
+}
+.me-row:last-child { border-bottom: none; }
+.me-row .ico { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex: none; }
+.me-row .txt { flex: 1; text-align: left; }
+.me-row .sub { display: block; font-size: .76rem; color: var(--ink-3); margin-top: 1px; }
+.me-row .arrow { color: var(--ink-3); }
+.version-line { text-align: center; color: var(--ink-3); font-size: .76rem; margin-top: 22px; }

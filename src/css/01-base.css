@@ -1,0 +1,58 @@
+/* ===== 基础 ===== */
+:root {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --ink: #2b2b33;
+  --ink-2: #6d6d78;
+  --ink-3: #a0a0ab;
+  --line: #ecebe6;
+  --accent: #7c6ce0;
+  --accent-soft: #efecfb;
+  --accent-deep: #5f4ecb;
+  --gold: #c9a86a;
+  --upright: #7c6ce0;
+  --reversed: #d98a76;
+  --ok: #4caf7d;
+  --danger: #d96a5f;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 10px 30px rgba(43, 43, 51, .08);
+  --shadow-sm: 0 4px 14px rgba(43, 43, 51, .06);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; padding: 0; }
+input, textarea { font-family: inherit; font-size: 1rem; color: var(--ink); }
+h1, h2, h3, h4, p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+a { color: var(--accent); text-decoration: none; }
+::-webkit-scrollbar { width: 0; height: 0; }
+:focus { outline: none; }
+
+.hidden { display: none !important; }
+.muted { color: var(--ink-3); }
+.small { font-size: .82rem; }
+
+/* 通用按钮 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 22px; border-radius: 999px; font-size: .95rem; font-weight: 600;
+  transition: transform .15s ease, opacity .15s ease, background .15s ease;
+  user-select: none;
+}
+.btn:active { transform: scale(.96); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 8px 20px rgba(124,108,224,.32); }
+.btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.btn-block { width: 100%; }
+.btn-mini { padding: 8px 16px; font-size: .82rem; font-weight: 500; }
