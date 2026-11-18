@@ -235,18 +235,13 @@ a { color: var(--primary); text-decoration: none; }
 .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .dim-item {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
-  padding: 13px; cursor: pointer;
-  transition: border-color .15s ease, transform .15s ease;
+  padding: 13px;
 }
-.dim-item:active { border-color: var(--primary); transform: scale(.98); }
 .dim-item .dim-head { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: .88rem; }
 .dim-item .dim-head .em { font-size: 1rem; }
 .dim-item .dim-body {
-  display: none; margin-top: 8px; font-size: .84rem; color: var(--ink-2); line-height: 1.6;
+  display: block; margin-top: 8px; font-size: .84rem; color: var(--ink-2); line-height: 1.6;
 }
-.dim-item.open .dim-body { display: block; }
-.dim-item .dim-head::after { content: "+"; margin-left: auto; color: var(--ink-3); font-size: .9rem; font-weight: 300; transition: transform .2s ease; }
-.dim-item.open .dim-head::after { content: "−"; }
 
 /* 面板 */
 .panel {
@@ -370,6 +365,17 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 .backup-actions { display: flex; gap: 6px; flex: none; }
 .backup-actions .btn { padding: 6px 12px; font-size: .78rem; }
 
+/* 关于折叠 */
+.panel-title.about-title { cursor: pointer; user-select: none; -webkit-user-select: none; }
+.panel-title.about-title .chev {
+  margin-left: auto; width: 7px; height: 7px; flex: none;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(45deg);
+  transition: transform .2s ease;
+}
+.panel-title.about-title.collapsed .chev { transform: rotate(-45deg); }
+.about-body.collapsed { display: none; }
+
 /* ===== 页面（airy-minimal-ui）===== */
 /* 今日 */
 .hero { text-align: center; padding: 24px 0 4px; }
@@ -463,8 +469,9 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 // ===== 常量 =====
 const APP_INFO = {
   name: '塔罗之语',
-  version: '0.4.0',
+  version: '0.4.1',
   changelog: [
+    { v: '0.4.1', date: '2026-11-18', items: ['今日六维解读默认展开，去掉折叠', '「我的」关于改为默认折叠，点击展开', '启动图标改为圣杯国王上半身特写'] },
     { v: '0.4.0', date: '2026-11-18', items: ['打包安卓 App：新增在线更新（打开自动检测，更新前自动备份）','新增存档备份：本地保留最近 2 份，可恢复/删除'] },
     { v: '0.3.3', date: '2026-11-18', items: ['图鉴支持按类型折叠分组（默认折叠）'] },
     { v: '0.3.2', date: '2026-11-18', items: ['修复图鉴/结果页进入详情白屏：跳转时未渲染详情页'] },
@@ -843,7 +850,6 @@ function renderHome() {
     view.innerHTML =
       '<section class="hero"><div class="kicker">今日 · 一抽</div><h2>今日之牌</h2><p class="sub">今日指引已抽取，愿你从容度过这一天</p></section>' +
       '<div class="result-block" id="today-result">' + todayResultHTML(card, today.orientation, false) + '</div>';
-    bindDimItems(view);
     bindResultActions(view, card, today.orientation);
   } else {
     view.innerHTML = homeShellHTML();
@@ -892,12 +898,6 @@ function todayResultHTML(card, orientation, animate) {
     '<div class="re-draw"><button id="btn-redraw">重新抽取</button></div>' +
     '<div style="margin-top:14px;"><button id="btn-detail" class="btn btn-primary btn-block">查看完整牌义</button></div>'
   );
-}
-
-function bindDimItems(scope) {
-  scope.querySelectorAll('.dim-item').forEach(function (item) {
-    item.addEventListener('click', function () { item.classList.toggle('open'); });
-  });
 }
 
 function bindResultActions(view, card, orientation) {
@@ -1212,9 +1212,11 @@ function renderMe() {
       '<button class="me-row" id="me-backup-list"><span class="ico">🗃️</span><span class="txt">本地备份<span class="sub">查看 / 恢复 / 删除备份</span></span><span class="arrow">›</span></button>' +
       '<button class="me-row" id="me-check-update"><span class="ico">🔄</span><span class="txt">检查更新<span class="sub">打开 App 时会自动检测</span></span><span class="arrow">›</span></button>' +
     '</div>' +
-    '<div class="panel"><div class="panel-title">ℹ️ 关于</div>' +
-      '<div class="me-row" style="cursor:default;"><span class="ico">🔮</span><span class="txt">' + APP_INFO.name + '<span class="sub">清爽简约 · 离线可用 · 数据只存本地</span></span><span style="color:var(--ink-3);font-size:.82rem;">v' + APP_INFO.version + '</span></div>' +
-      '<div id="me-changelog"></div>' +
+    '<div class="panel"><div class="panel-title about-title" id="me-about-title">ℹ️ 关于<span class="chev"></span></div>' +
+      '<div class="about-body collapsed" id="me-about-body">' +
+        '<div class="me-row" style="cursor:default;"><span class="ico">🔮</span><span class="txt">' + APP_INFO.name + '<span class="sub">清爽简约 · 离线可用 · 数据只存本地</span></span><span style="color:var(--ink-3);font-size:.82rem;">v' + APP_INFO.version + '</span></div>' +
+        '<div id="me-changelog"></div>' +
+      '</div>' +
     '</div>' +
     '<p class="version-line">塔罗之语 v' + APP_INFO.version + ' · 所有牌义仅供自我探索与娱乐参考</p>';
   view.querySelectorAll('[data-learned]').forEach(function (chip) {
@@ -1240,6 +1242,13 @@ function renderMe() {
       reader.readAsText(file, 'utf-8');
     });
     input.click();
+  });
+  // 关于折叠
+  const aboutTitle = view.querySelector('#me-about-title');
+  if (aboutTitle) aboutTitle.addEventListener('click', function () {
+    const body = document.getElementById('me-about-body');
+    body.classList.toggle('collapsed');
+    aboutTitle.classList.toggle('collapsed');
   });
   // 备份与更新
   view.querySelector('#me-backup-now').addEventListener('click', function () {

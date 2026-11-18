@@ -77,18 +77,13 @@
 .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .dim-item {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
-  padding: 13px; cursor: pointer;
-  transition: border-color .15s ease, transform .15s ease;
+  padding: 13px;
 }
-.dim-item:active { border-color: var(--primary); transform: scale(.98); }
 .dim-item .dim-head { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: .88rem; }
 .dim-item .dim-head .em { font-size: 1rem; }
 .dim-item .dim-body {
-  display: none; margin-top: 8px; font-size: .84rem; color: var(--ink-2); line-height: 1.6;
+  display: block; margin-top: 8px; font-size: .84rem; color: var(--ink-2); line-height: 1.6;
 }
-.dim-item.open .dim-body { display: block; }
-.dim-item .dim-head::after { content: "+"; margin-left: auto; color: var(--ink-3); font-size: .9rem; font-weight: 300; transition: transform .2s ease; }
-.dim-item.open .dim-head::after { content: "−"; }
 
 /* 面板 */
 .panel {
@@ -211,3 +206,14 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 .backup-info .muted { font-size: .74rem; margin-top: 2px; }
 .backup-actions { display: flex; gap: 6px; flex: none; }
 .backup-actions .btn { padding: 6px 12px; font-size: .78rem; }
+
+/* 关于折叠 */
+.panel-title.about-title { cursor: pointer; user-select: none; -webkit-user-select: none; }
+.panel-title.about-title .chev {
+  margin-left: auto; width: 7px; height: 7px; flex: none;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(45deg);
+  transition: transform .2s ease;
+}
+.panel-title.about-title.collapsed .chev { transform: rotate(-45deg); }
+.about-body.collapsed { display: none; }

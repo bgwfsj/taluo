@@ -27,9 +27,11 @@ function renderMe() {
       '<button class="me-row" id="me-backup-list"><span class="ico">🗃️</span><span class="txt">本地备份<span class="sub">查看 / 恢复 / 删除备份</span></span><span class="arrow">›</span></button>' +
       '<button class="me-row" id="me-check-update"><span class="ico">🔄</span><span class="txt">检查更新<span class="sub">打开 App 时会自动检测</span></span><span class="arrow">›</span></button>' +
     '</div>' +
-    '<div class="panel"><div class="panel-title">ℹ️ 关于</div>' +
-      '<div class="me-row" style="cursor:default;"><span class="ico">🔮</span><span class="txt">' + APP_INFO.name + '<span class="sub">清爽简约 · 离线可用 · 数据只存本地</span></span><span style="color:var(--ink-3);font-size:.82rem;">v' + APP_INFO.version + '</span></div>' +
-      '<div id="me-changelog"></div>' +
+    '<div class="panel"><div class="panel-title about-title" id="me-about-title">ℹ️ 关于<span class="chev"></span></div>' +
+      '<div class="about-body collapsed" id="me-about-body">' +
+        '<div class="me-row" style="cursor:default;"><span class="ico">🔮</span><span class="txt">' + APP_INFO.name + '<span class="sub">清爽简约 · 离线可用 · 数据只存本地</span></span><span style="color:var(--ink-3);font-size:.82rem;">v' + APP_INFO.version + '</span></div>' +
+        '<div id="me-changelog"></div>' +
+      '</div>' +
     '</div>' +
     '<p class="version-line">塔罗之语 v' + APP_INFO.version + ' · 所有牌义仅供自我探索与娱乐参考</p>';
   view.querySelectorAll('[data-learned]').forEach(function (chip) {
@@ -55,6 +57,13 @@ function renderMe() {
       reader.readAsText(file, 'utf-8');
     });
     input.click();
+  });
+  // 关于折叠
+  const aboutTitle = view.querySelector('#me-about-title');
+  if (aboutTitle) aboutTitle.addEventListener('click', function () {
+    const body = document.getElementById('me-about-body');
+    body.classList.toggle('collapsed');
+    aboutTitle.classList.toggle('collapsed');
   });
   // 备份与更新
   view.querySelector('#me-backup-now').addEventListener('click', function () {

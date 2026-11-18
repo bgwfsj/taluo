@@ -21,7 +21,6 @@ function renderHome() {
     view.innerHTML =
       '<section class="hero"><div class="kicker">今日 · 一抽</div><h2>今日之牌</h2><p class="sub">今日指引已抽取，愿你从容度过这一天</p></section>' +
       '<div class="result-block" id="today-result">' + todayResultHTML(card, today.orientation, false) + '</div>';
-    bindDimItems(view);
     bindResultActions(view, card, today.orientation);
   } else {
     view.innerHTML = homeShellHTML();
@@ -70,12 +69,6 @@ function todayResultHTML(card, orientation, animate) {
     '<div class="re-draw"><button id="btn-redraw">重新抽取</button></div>' +
     '<div style="margin-top:14px;"><button id="btn-detail" class="btn btn-primary btn-block">查看完整牌义</button></div>'
   );
-}
-
-function bindDimItems(scope) {
-  scope.querySelectorAll('.dim-item').forEach(function (item) {
-    item.addEventListener('click', function () { item.classList.toggle('open'); });
-  });
 }
 
 function bindResultActions(view, card, orientation) {

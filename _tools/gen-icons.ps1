@@ -31,9 +31,11 @@ function New-Icon($size, $outPath) {
     [System.Drawing.Color]::FromArgb(255, 232, 246, 240),
     [System.Drawing.Color]::FromArgb(255, 226, 238, 250), 90)
   $g.FillRectangle($brush, $rect)
-  $ratio = $card.Width / $card.Height
-  $cw = [int]($size * 0.62)
-  $ch = [int]($cw / $ratio)
+  # 只取上半身（裁剪窗口 top=55, h=195），比例接近 1.54:1
+  $cropTop = 55
+  $cropH = 195
+  $cw = [int]($size * 0.64)
+  $ch = [int]($cw * $cropH / $card.Width)
   $cx = [int](($size - $cw) / 2)
   $cy = [int](($size - $ch) / 2) + [int]($size * 0.01)
   $radius = [int]($size * 0.045)
@@ -42,7 +44,7 @@ function New-Icon($size, $outPath) {
   $g.FillPath($sb, $sh)
   $clip = New-RoundedPath $cx $cy $cw $ch $radius
   $g.SetClip($clip)
-  $srcRect = [System.Drawing.Rectangle]::new(0, 0, $card.Width, $card.Height)
+  $srcRect = [System.Drawing.Rectangle]::new(0, $cropTop, $card.Width, $cropH)
   $dstRect = [System.Drawing.Rectangle]::new($cx, $cy, $cw, $ch)
   $g.DrawImage($card, $dstRect, $srcRect, [System.Drawing.GraphicsUnit]::Pixel)
   $g.ResetClip()
