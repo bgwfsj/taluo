@@ -24,22 +24,41 @@ function filterCards(cards) {
   });
 }
 
+// 分组折叠状态（默认折叠）
+const glossaryCollapsed = {};
+GROUPS.forEach(function (g) { glossaryCollapsed[g.key] = true; });
+
 function renderGlossaryGroups() {
   const wrap = document.getElementById('glossary-groups');
   const empty = document.getElementById('glossary-empty');
   if (!wrap) return;
   let html = '';
   let total = 0;
+  const searching = !!glossaryKeyword;
   GROUPS.forEach(function (g) {
     const cards = filterCards(cardsByGroup(g.key));
     total += cards.length;
     if (!cards.length) return;
+    const collapsed = !searching && glossaryCollapsed[g.key];
     html +=
-      '<div class="group"><div class="group-title">' + g.label + '<span class="count">' + cards.length + '</span></div>' +
-      cards.map(cardRowHTML).join('') + '</div>';
+      '<div class="group" data-group="' + g.key + '">' +
+        '<div class="group-title' + (collapsed ? ' collapsed' : '') + '">' +
+          '<span class="group-label">' + g.label + '</span>' +
+          '<span class="count">' + cards.length + '</span>' +
+          '<span class="chev"></span>' +
+        '</div>' +
+        '<div class="group-body' + (collapsed ? ' collapsed' : '') + '">' + cards.map(cardRowHTML).join('') + '</div>' +
+      '</div>';
   });
   wrap.innerHTML = html;
   empty.classList.toggle('hidden', total > 0);
+  wrap.querySelectorAll('.group-title').forEach(function (title) {
+    title.addEventListener('click', function () {
+      const key = title.closest('.group').dataset.group;
+      glossaryCollapsed[key] = !glossaryCollapsed[key];
+      renderGlossaryGroups();
+    });
+  });
   wrap.querySelectorAll('.card-row').forEach(function (row) {
     row.addEventListener('click', function () { Router.push('detail', row.dataset.id); });
   });
