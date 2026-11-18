@@ -78,7 +78,7 @@ node _tools\gen-card-images.js
 
 ## 回归验证
 
-`?selftest` 会跑 18 项自检（数据完整性 78 张、六维齐全、牌面图片、存储读写、各页渲染冒烟、弹层按钮/重新抽取/备注保存交互），
+`?selftest` 会跑 19 项自检（数据完整性 78 张、六维齐全、牌面图片、存储读写、各页渲染冒烟、弹层/重新抽取/备注/图鉴跳详情交互），
 结果写入 `<div id="selftest" data-result="PASS|FAIL">`，由 verify.ps1 用无头 Chrome dump 后断言。
 `?qa` 输出布局度量（横向溢出、背景色、关键元素位置）；`?page=glossary|detail&card=|me|today` 可直达页面预览。
 

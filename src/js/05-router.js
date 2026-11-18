@@ -18,6 +18,10 @@ const Router = {
   },
   push(name, param) {
     this.stack.push({ name: this.current, param: this.param });
+    if (name === 'detail') { if (param && getCard(param)) renderDetail(param); }
+    else if (name === 'glossary') renderGlossary();
+    else if (name === 'me') renderMe();
+    else renderHome();
     this.go(name, param);
   },
   back() {

@@ -90,6 +90,12 @@ function runSelfTest() {
     const rowCount = document.querySelectorAll('#view-glossary .card-row').length;
     if (rowCount !== 78) fail('ui-glossary-count', 'expected 78, got ' + rowCount); else pass('ui-glossary-count');
 
+    const firstRow = document.querySelector('#view-glossary .card-row');
+    firstRow.click();
+    if (Router.current !== 'detail' || !document.getElementById('note-input')) fail('glossary-nav-detail');
+    else pass('glossary-nav-detail');
+    Router.back();
+
     const sample = TAROT_CARDS[21];
     Router.go('detail'); renderDetail(sample.id);
     if (!document.getElementById('note-input') || !document.getElementById('learn-toggle')) fail('ui-detail'); else pass('ui-detail');
