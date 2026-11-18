@@ -48,8 +48,11 @@ function cardFrontHTML(card, opts) {
   opts = opts || {};
   const rev = opts.reversed ? ' rev' : '';
   const num = cornerNum(card);
+  const img = CARD_IMAGES[card.id];
   let art = '';
-  if (card.arcana === 'major') {
+  if (img) {
+    art = '<img class="card-img" src="' + img + '" alt="' + card.nameEn + '">';
+  } else if (card.arcana === 'major') {
     art = '<span class="glyph">' + card.glyph + '</span>';
   } else {
     const suitColor = SUITS[card.suit].color;
@@ -64,7 +67,7 @@ function cardFrontHTML(card, opts) {
 }
 
 function cardBackHTML() {
-  return '<div class="face back"><div class="card-back"><span class="glint"></span><span class="emblem">✦</span></div></div>';
+  return '<div class="face back"><div class="card-back"><img class="back-img" src="' + CARD_BACK_IMAGE + '" alt=""></div></div>';
 }
 
 // 完整可翻转的塔罗牌
@@ -80,6 +83,10 @@ function tarotCardHTML(card, opts) {
 
 // 图鉴用的迷你牌
 function miniCardHTML(card) {
+  const img = CARD_IMAGES[card.id];
+  if (img) {
+    return '<div class="mini-card"><img class="mini-img" src="' + img + '" alt="' + card.nameEn + '"></div>';
+  }
   if (card.arcana === 'major') {
     return '<div class="mini-card"><span class="glyph">' + card.glyph + '</span><span class="mini-num">' + cornerNum(card) + '</span></div>';
   }

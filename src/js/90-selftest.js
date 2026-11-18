@@ -35,7 +35,16 @@ function runSelfTest() {
     else pass('dims-all-cards');
   } catch (e) { fail('data-exception', e.message); }
 
-  // 2) 存储读写
+  // 1.5) 牌面图片数据完整性
+  try {
+    const missingImg = TAROT_CARDS.filter(function (c) { return !CARD_IMAGES[c.id] || CARD_IMAGES[c.id].indexOf('data:image/jpeg;base64,') !== 0; });
+    if (missingImg.length) fail('card-images', missingImg.slice(0, 5).join(','));
+    else pass('card-images-78');
+    if (!CARD_BACK_IMAGE || CARD_BACK_IMAGE.indexOf('data:image/jpeg;base64,') !== 0) fail('card-back-image');
+    else pass('card-back-image');
+  } catch (e) { fail('img-exception', e.message); }
+
+  // 2) 存储读写  // 2) 存储读写
   try {
     const orig = {
       notes: storeGet(STORE_KEYS.notes, {}),

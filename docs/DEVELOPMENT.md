@@ -9,12 +9,16 @@ src/                 源码（只改这里，生成文件不直接编辑）
   template.html      HTML 骨架，{{CSS}} / {{JS}} 占位符
   css/               按模块拆分样式（01-base / 02-layout / 03-components / 04-pages）
   js/                按模块拆分脚本，文件名数字前缀决定合并顺序
-    data/            塔罗牌数据（10-dims 模板、11-12 大阿卡纳、20-23 小阿卡纳）
+    data/            塔罗牌数据（10-dims 模板、11-12 大阿卡纳、15 牌面图片、20-23 小阿卡纳）
 tarot.html           构建产物：自包含单文件（打包时同步到 APK assets/index.html）
 _tools/
   build.js           合并 src → tarot.html，检查占位符与内联事件
   verify.ps1         一键验证：构建 + JS 语法 + 无头 Chrome 回归
-tests/               回归产物与截图（自检 dump、shots/）
+  fetch-images.ps1   从 Wikimedia Commons 下载 78 张 RWS 原图 + 牌背（需要 tests/imageinfo.json）
+  compress-images.ps1 压缩为 300px JPEG（输出 tests/images-opt/）
+  gen-card-images.js 由压缩图生成 src/js/data/15-card-images.js（base64 内联）
+  shots.ps1          无头 Chrome 生成各页面手机视口截图
+tests/               回归产物与截图（imageinfo.json、自检 dump、shots/）
 docs/                本文档 + HANDOFF.md
 ```
 
@@ -23,6 +27,11 @@ docs/                本文档 + HANDOFF.md
 ```powershell
 node _tools\build.js                     # 构建单文件
 powershell -NoProfile -ExecutionPolicy Bypass -File _tools\verify.ps1   # 一键验证
+
+# 更新牌面图片流水线（网络下载 → 压缩 → 生成 base64 模块）
+powershell -NoProfile -ExecutionPolicy Bypass -File _tools\fetch-images.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File _tools\compress-images.ps1
+node _tools\gen-card-images.js
 ```
 
 ## 数据模型
@@ -46,8 +55,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File _tools\verify.ps1   # 一键
 小阿卡纳的“今日六维”由 `data/10-dims.js` 的生成器合成：
 `花色维度模板（4 花色 × 6 维度 × 正逆位）+ 数字/宫廷收尾短语（14 种 × 正逆位）`。
 
-牌面视觉：major 用 emoji 符号 + 罗马数字；minor 用内联 SVG 花色符号 + 数字。
-逆位展示时牌面内容旋转 180°（`.card-front.rev`）。
+牌面视觉：78 张牌全部使用 Rider-Waite（RWS 1909）原版扫描图（公有领域），
+由 `data/15-card-images.js` 以 base64 内联，单文件离线可用；牌背使用原版 Roses & Lilies 图案。
+图片 key 与牌 id 一一对应（major `m00-m21`，minor `w/c/s/p-ace/2..10/page/knight/queen/king`）。
+翻转语义：未翻转=牌背朝上（面朝下），flipped=翻开显示牌面；逆位时牌面内容旋转 180°（`.card-front.rev`）。
 
 ## 页面
 
@@ -66,7 +77,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File _tools\verify.ps1   # 一键
 
 ## 回归验证
 
-`?selftest` 会跑 14 项自检（数据完整性 78 张、六维齐全、存储读写、各页渲染冒烟），
+`?selftest` 会跑 16 项自检（数据完整性 78 张、六维齐全、牌面图片、存储读写、各页渲染冒烟），
 结果写入 `<div id="selftest" data-result="PASS|FAIL">`，由 verify.ps1 用无头 Chrome dump 后断言。
 `?qa` 输出布局度量（横向溢出、背景色、关键元素位置）；`?page=glossary|detail&card=|me|today` 可直达页面预览。
 

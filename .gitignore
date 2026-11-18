@@ -3,3 +3,7 @@ tests/qa-dump.html
 tests/shots/
 _tools/_check.js
 _tools/_patch*.js
+
+# 可再生图片资源（由 _tools 脚本从 Wikimedia 下载/压缩生成）
+tests/images/
+tests/images-opt/
