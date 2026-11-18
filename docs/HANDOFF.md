@@ -9,7 +9,7 @@
 ## 交付物
 - `tarot.html`：自包含单文件（约 5.8MB，含 78 张牌面图 base64，浏览器直接打开即用，手机友好，底部悬浮一字导航）。
 - `src/`：模块化源码（模板 + 按页拆分 CSS/JS + 塔罗数据 + `data/15-card-images.js` 牌面图片）。
-- `TarotApk/`：安卓 WebView 壳工程（MainActivity + JS 桥 + 在线更新器 + 备份存储），图标为圣杯国王。
+- `TarotApk/`：安卓 WebView 壳工程（MainActivity + JS 桥 + 在线更新器 + 备份存储），图标为圣杯国王中间人像特写（只保留人像、无边框、完全透明背景）。
 - `塔罗.apk`：当前安装包（v0.4.3，正式签名）；`塔罗-v0.4.3.apk` 留档；旧版归档在 `历史版本/发布包归档/`；`bu-<版本>.apk` 为 GitHub Release 上传件（纯 ASCII 名）。
 - `_tools/`：build / verify / shots / gen-icons.js / build-release（Gradle 打包）/ verify-apk（产物校验）脚本。
 - 自检 21 项全 PASS（含牌面图片完整性 + 弹层/重新抽取/备注/图鉴跳详情 + 备份保留 2 份交互冒烟）。
