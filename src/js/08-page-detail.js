@@ -16,9 +16,12 @@ function renderDetail(cardId) {
       '<h1>' + card.name + '</h1><span class="muted small" style="flex:none;">' + card.nameEn + '</span></div>' +
     '<div class="detail-card-wrap" id="detail-card-wrap">' + tarotCardHTML(card, { flipped: true, reversed: detailVisRev }) + '</div>' +
     '<p class="orient-tip" id="orient-tip">轻触牌面切换正逆位</p>' +
-    '<button class="learn-toggle' + (LearnedStore.has(card.id) ? ' done' : '') + '" id="learn-toggle">' +
-      '<span id="learn-star">' + (LearnedStore.has(card.id) ? '★' : '☆') + '</span>' +
-      '<span id="learn-label">' + (LearnedStore.has(card.id) ? '已标记学习' : '标记为已学习') + '</span></button>' +
+    '<div class="learn-orients">' +
+      '<button class="learn-toggle up' + (LearnedStore.has(card.id, 'upright') ? ' done' : '') + '" id="learn-up">' +
+        '<span class="ls">正位</span><span class="ls-star">' + (LearnedStore.has(card.id, 'upright') ? '★' : '☆') + '</span></button>' +
+      '<button class="learn-toggle rev' + (LearnedStore.has(card.id, 'reversed') ? ' done' : '') + '" id="learn-rev">' +
+        '<span class="ls">逆位</span><span class="ls-star">' + (LearnedStore.has(card.id, 'reversed') ? '★' : '☆') + '</span></button>' +
+    '</div>' +
     orientBlockHTML(card, 'upright') +
     orientBlockHTML(card, 'reversed') +
     '<div class="panel"><div class="panel-title">🖼️ 牌面描述</div><p style="font-size:.88rem;color:var(--ink-2);">' + esc(card.desc) + '</p></div>' +
@@ -33,16 +36,18 @@ function renderDetail(cardId) {
     detailVisRev = !detailVisRev;
     view.querySelector('#detail-card-wrap').innerHTML = tarotCardHTML(card, { flipped: true, reversed: detailVisRev });
   });
-  // 已学习
-  view.querySelector('#learn-toggle').addEventListener('click', function () {
-    const done = LearnedStore.toggle(card.id);
-    const btn = view.querySelector('#learn-toggle');
-    btn.classList.toggle('done', done);
-    view.querySelector('#learn-star').textContent = done ? '★' : '☆';
-    view.querySelector('#learn-label').textContent = done ? '已标记学习' : '标记为已学习';
-    toast(done ? '已标记学习 ✓' : '已取消学习标记');
-  });
-  bindNotes(card.id);
+  // 已学习（正位 / 逆位分开）
+  view.querySelector('#learn-up').addEventListener('click', function () { toggleLearn(card.id, 'upright', view); });
+  view.querySelector('#learn-rev').addEventListener('click', function () { toggleLearn(card.id, 'reversed', view); });
+  bindNotes(card.id, view.querySelector('#notes-panel'));
+}
+
+function toggleLearn(cardId, orient, view) {
+  const done = LearnedStore.toggle(cardId, orient);
+  const btn = view.querySelector(orient === 'reversed' ? '#learn-rev' : '#learn-up');
+  btn.classList.toggle('done', done);
+  btn.querySelector('.ls-star').textContent = done ? '★' : '☆';
+  toast(orientationLabel(orient) + (done ? ' 已标记学习 ✓' : ' 已取消学习标记'));
 }
 
 function orientBlockHTML(card, orientation) {
@@ -66,10 +71,10 @@ function notesFormHTML(cardId) {
   );
 }
 
-function bindNotes(cardId) {
-  const input = document.getElementById('note-input');
-  const count = document.getElementById('note-count');
-  const addBtn = document.getElementById('note-add');
+function bindNotes(cardId, panel) {
+  const input = panel.querySelector('#note-input');
+  const count = panel.querySelector('#note-count');
+  const addBtn = panel.querySelector('#note-add');
   if (!input) return;
   const syncCount = function () { count.textContent = String(input.value.length); };
   input.addEventListener('input', syncCount);
@@ -80,14 +85,13 @@ function bindNotes(cardId) {
     NotesStore.add(cardId, text);
     input.value = '';
     syncCount();
-    renderNotes(cardId);
+    renderNotes(cardId, panel.querySelector('#notes-list'));
     toast('备注已添加');
   });
-  renderNotes(cardId);
+  renderNotes(cardId, panel.querySelector('#notes-list'));
 }
 
-function renderNotes(cardId) {
-  const list = document.getElementById('notes-list');
+function renderNotes(cardId, list) {
   if (!list) return;
   const notes = NotesStore.forCard(cardId);
   if (!notes.length) {
@@ -103,11 +107,11 @@ function renderNotes(cardId) {
     );
   }).join('');
   list.querySelectorAll('.note-item').forEach(function (item) {
-    bindNoteItem(cardId, item);
+    bindNoteItem(cardId, item, list);
   });
 }
 
-function bindNoteItem(cardId, item) {
+function bindNoteItem(cardId, item, list) {
   let suppressClick = false;
   let startX = null, startY = null, curX = null;
   item.addEventListener('touchstart', function (e) {
@@ -129,28 +133,28 @@ function bindNoteItem(cardId, item) {
     setTimeout(function () { item.style.transition = ''; }, 200);
     if (dx < -64) {
       suppressClick = true;
-      deleteNote(cardId, Number(item.dataset.ts));
+      deleteNote(cardId, Number(item.dataset.ts), list);
       setTimeout(function () { suppressClick = false; }, 400);
     }
   });
   item.addEventListener('click', function () {
     if (suppressClick) return;
-    editNote(cardId, Number(item.dataset.ts));
+    editNote(cardId, Number(item.dataset.ts), list);
   });
 }
 
-function deleteNote(cardId, ts) {
+function deleteNote(cardId, ts, list) {
   openModal('删除这条备注？', '<p style="color:var(--ink-2);font-size:.9rem;">删除后不可恢复。</p>',
     [modalBtn('取消', 'btn-ghost', closeModal),
      modalBtn('删除', 'btn-danger', function () {
        closeModal();
        NotesStore.remove(cardId, ts);
-       renderNotes(cardId);
+       renderNotes(cardId, list);
        toast('备注已删除');
      })]);
 }
 
-function editNote(cardId, ts) {
+function editNote(cardId, ts, list) {
   const note = NotesStore.forCard(cardId).find(function (n) { return n.ts === ts; });
   if (!note) return;
   openModal('编辑备注',
@@ -164,7 +168,7 @@ function editNote(cardId, ts) {
        if (text.length > NOTE_LIMIT) { toast('每条备注最多 ' + NOTE_LIMIT + ' 字'); return; }
        NotesStore.update(cardId, ts, text);
        closeModal();
-       renderNotes(cardId);
+       renderNotes(cardId, list);
        toast('备注已更新');
      })]);
   const delBtn = document.createElement('button');
@@ -173,7 +177,7 @@ function editNote(cardId, ts) {
   delBtn.textContent = '删除此条备注';
   delBtn.addEventListener('click', function () {
     closeModal();
-    deleteNote(cardId, ts);
+    deleteNote(cardId, ts, list);
   });
   const sheet = document.querySelector('#modal-root .modal');
   if (sheet) sheet.appendChild(delBtn);

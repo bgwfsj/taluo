@@ -1,8 +1,9 @@
 // ===== 常量 =====
 const APP_INFO = {
   name: '塔罗之语',
-  version: '0.4.4',
+  version: '0.5.0',
   changelog: [
+    { v: '0.5.0', date: '2026-11-19', items: ['学习标记分正位 / 逆位，图鉴与「我」分别展示', '「今日之牌」新增抽牌记录：按类型折叠分组，显示每张牌抽到次数', '「今日之牌」支持备注，与图鉴牌义详情互通'] },
     { v: '0.4.4', date: '2026-11-18', items: ['启动图标：改为白色背景 + 中间人像特写（保留上一版去边框裁剪）'] },
     { v: '0.4.3', date: '2026-11-18', items: ['启动图标：只保留中间人像（圣杯国王特写），去除左右卡牌边框，完全透明背景，人物最大化 94%'] },
     { v: '0.4.2', date: '2026-11-18', items: ['启动图标重做：去掉白边白底，深色渐变底 + 圣杯国王去背景放大特写'] },
@@ -37,6 +38,7 @@ const STORE_KEYS = {
   notes: 'tarot.notes',
   learned: 'tarot.learned',
   today: 'tarot.today',
+  history: 'tarot.history',
   backups: 'tarot.backups'
 };
 

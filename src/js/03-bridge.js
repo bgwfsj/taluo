@@ -32,7 +32,8 @@ function buildBackupData() {
     exportedAt: new Date().toISOString(),
     notes: storeGet(STORE_KEYS.notes, {}),
     learned: storeGet(STORE_KEYS.learned, []),
-    today: storeGet(STORE_KEYS.today, null)
+    today: storeGet(STORE_KEYS.today, null),
+    history: storeGet(STORE_KEYS.history, [])
   };
 }
 function backupStamp() {

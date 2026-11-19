@@ -2,25 +2,32 @@
 function renderMe() {
   renderHeader();
   const view = document.getElementById('view-me');
-  const learned = LearnedStore.count();
-  const pct = Math.round(learned / TAROT_CARDS.length * 100);
-  const learnedList = LearnedStore.list().map(getCard).filter(Boolean);
+  const upCount = LearnedStore.countOrient('upright');
+  const revCount = LearnedStore.countOrient('reversed');
+  const learnedTotal = upCount + revCount;
+  const pct = Math.round(learnedTotal / (TAROT_CARDS.length * 2) * 100);
+  const upList = LearnedStore.list('upright').map(getCard).filter(Boolean);
+  const revList = LearnedStore.list('reversed').map(getCard).filter(Boolean);
   view.innerHTML =
     '<div class="panel"><div class="panel-title">📚 学习进度</div>' +
       '<div style="display:flex;justify-content:space-between;font-size:.84rem;color:var(--ink-2);margin-bottom:8px;">' +
-        '<span>已学习 ' + learned + ' / ' + TAROT_CARDS.length + ' 张</span><span>' + pct + '%</span></div>' +
+        '<span>正位 ' + upCount + ' / ' + TAROT_CARDS.length + ' · 逆位 ' + revCount + ' / ' + TAROT_CARDS.length + '</span><span>' + pct + '%</span></div>' +
       '<div class="progress"><div style="width:' + pct + '%"></div></div>' +
-      (learnedList.length
-        ? '<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">' +
-          learnedList.map(function (c) {
-            return '<span class="chip" style="cursor:pointer;" data-learned="' + c.id + '">' + c.name + '</span>';
-          }).join('') + '</div>'
+      ((upList.length || revList.length)
+        ? '<div style="margin-top:12px;">' +
+          (upList.length ? '<div class="me-learn-sec"><div class="me-learn-label up">正位已学习</div><div class="me-learn-chips">' +
+            upList.map(function (c) { return '<span class="chip" style="cursor:pointer;" data-learned="' + c.id + '">' + c.name + '</span>'; }).join('') +
+            '</div></div>' : '') +
+          (revList.length ? '<div class="me-learn-sec"><div class="me-learn-label rev">逆位已学习</div><div class="me-learn-chips">' +
+            revList.map(function (c) { return '<span class="chip" style="cursor:pointer;" data-learned="' + c.id + '">' + c.name + '</span>'; }).join('') +
+            '</div></div>' : '') +
+          '</div>'
         : '<p class="muted small" style="margin-top:10px;">在「图鉴」里把学过的牌标记起来吧。</p>') +
     '</div>' +
     '<div class="panel"><div class="panel-title">🗂️ 数据管理</div>' +
-      '<button class="me-row" id="me-export"><span class="ico">📤</span><span class="txt">导出备份<span class="sub">把备注、学习标记、今日之牌存为 JSON 文件</span></span><span class="arrow">›</span></button>' +
+      '<button class="me-row" id="me-export"><span class="ico">📤</span><span class="txt">导出备份<span class="sub">把备注、学习标记、今日之牌、抽牌记录存为 JSON 文件</span></span><span class="arrow">›</span></button>' +
       '<button class="me-row" id="me-import"><span class="ico">📥</span><span class="txt">导入备份<span class="sub">从备份文件恢复数据（会覆盖当前数据）</span></span><span class="arrow">›</span></button>' +
-      '<button class="me-row" id="me-reset"><span class="ico">🧹</span><span class="txt">重置全部数据<span class="sub">清空备注、学习标记与今日之牌</span></span><span class="arrow">›</span></button>' +
+      '<button class="me-row" id="me-reset"><span class="ico">🧹</span><span class="txt">重置全部数据<span class="sub">清空备注、学习标记、今日之牌与抽牌记录</span></span><span class="arrow">›</span></button>' +
     '</div>' +
     '<div class="panel"><div class="panel-title">💾 备份与更新</div>' +
       '<button class="me-row" id="me-backup-now"><span class="ico">🛡️</span><span class="txt">立即备份<span class="sub">存档保存到本地，只保留最近 2 份</span></span><span class="arrow">›</span></button>' +
@@ -76,7 +83,7 @@ function renderMe() {
   view.querySelector('#me-check-update').addEventListener('click', function () { checkForUpdate(true); });
   // 重置
   view.querySelector('#me-reset').addEventListener('click', function () {
-    openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记和今日之牌，且不可恢复。建议先导出备份。</p>',
+    openModal('重置全部数据？', '<p style="color:var(--ink-2);font-size:.9rem;">将清空所有备注、学习标记、今日之牌与抽牌记录，且不可恢复。建议先导出备份。</p>',
       [modalBtn('取消', 'btn-ghost', closeModal),
        modalBtn('确认重置', 'btn-danger', function () {
          closeModal();
@@ -94,7 +101,8 @@ function exportBackup() {
     exportedAt: new Date().toISOString(),
     notes: storeGet(STORE_KEYS.notes, {}),
     learned: storeGet(STORE_KEYS.learned, []),
-    today: storeGet(STORE_KEYS.today, null)
+    today: storeGet(STORE_KEYS.today, null),
+    history: storeGet(STORE_KEYS.history, [])
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -118,6 +126,7 @@ function importBackup(text) {
     }
     storeSet(STORE_KEYS.notes, data.notes || {});
     storeSet(STORE_KEYS.learned, Array.isArray(data.learned) ? data.learned : []);
+    if (Array.isArray(data.history)) storeSet(STORE_KEYS.history, data.history);
     if (data.today && typeof data.today === 'object') storeSet(STORE_KEYS.today, data.today);
     renderMe();
     toast('备份已导入 ✓');

@@ -60,14 +60,26 @@ function runSelfTest() {
     NotesStore.remove(id, arr[0].ts);
     if (NotesStore.forCard(id).length) fail('notes-remove'); else pass('notes-remove');
 
-    const t0 = LearnedStore.toggle(id);
-    const t1 = LearnedStore.toggle(id);
+    const t0 = LearnedStore.toggle(id, 'upright');
+    const t1 = LearnedStore.toggle(id, 'upright');
     if (t0 !== true || t1 !== false) fail('learned-toggle'); else pass('learned-toggle');
+    LearnedStore.toggle(id, 'reversed');
+    if (!LearnedStore.has(id, 'reversed') || LearnedStore.has(id, 'upright')) fail('learned-orient'); else pass('learned-orient');
+    LearnedStore.toggle(id, 'reversed');
 
     TodayStore.set(id, 'reversed');
     const t = TodayStore.get();
     if (!t || t.cardId !== id || t.orientation !== 'reversed') fail('today-store'); else pass('today-store');
     TodayStore.clear();
+
+    const origHistory = storeGet(STORE_KEYS.history, []);
+    localStorage.removeItem(STORE_KEYS.history);
+    HistoryStore.add(id, 'upright');
+    HistoryStore.add(id, 'upright');
+    HistoryStore.add(id, 'reversed');
+    const hCounts = HistoryStore.counts();
+    if (!hCounts[id] || hCounts[id].total !== 3 || hCounts[id].upright !== 2 || hCounts[id].reversed !== 1) fail('history-counts'); else pass('history-counts');
+    storeSet(STORE_KEYS.history, origHistory);
 
     storeSet(STORE_KEYS.notes, orig.notes);
     storeSet(STORE_KEYS.learned, orig.learned);
@@ -84,6 +96,8 @@ function runSelfTest() {
     const resultEl = document.getElementById('today-result');
     const hasResult = resultEl && resultEl.innerHTML.indexOf('orientation-badge upright') >= 0 && resultEl.innerHTML.indexOf(TAROT_CARDS[0].name) >= 0;
     if (!hasResult) fail('ui-today-result'); else pass('ui-today-result');
+    if (!document.querySelector('#view-home #notes-panel #note-input')) fail('ui-today-notes'); else pass('ui-today-notes');
+    if (!document.querySelector('#view-home #draw-history')) fail('ui-draw-history'); else pass('ui-draw-history');
     TodayStore.clear();
 
     Router.go('glossary'); renderGlossary();
@@ -92,13 +106,13 @@ function runSelfTest() {
 
     const firstRow = document.querySelector('#view-glossary .card-row');
     firstRow.click();
-    if (Router.current !== 'detail' || !document.getElementById('note-input')) fail('glossary-nav-detail');
+    if (Router.current !== 'detail' || !document.querySelector('#view-detail #note-input')) fail('glossary-nav-detail');
     else pass('glossary-nav-detail');
     Router.back();
 
     const sample = TAROT_CARDS[21];
     Router.go('detail'); renderDetail(sample.id);
-    if (!document.getElementById('note-input') || !document.getElementById('learn-toggle')) fail('ui-detail'); else pass('ui-detail');
+    if (!document.querySelector('#view-detail #note-input') || !document.getElementById('learn-up') || !document.getElementById('learn-rev')) fail('ui-detail'); else pass('ui-detail');
 
     Router.go('me'); renderMe();
     if (!document.getElementById('me-export') || !document.getElementById('me-import') || !document.getElementById('me-backup-now') || !document.getElementById('me-backup-list') || !document.getElementById('me-check-update')) fail('ui-me'); else pass('ui-me');
@@ -134,8 +148,8 @@ function runSelfTest() {
     // 备注：轻点条目 → 编辑弹层 → 保存生效
     Router.go('detail'); renderDetail(TAROT_CARDS[0].id);
     NotesStore.add(TAROT_CARDS[0].id, '弹层测试');
-    renderNotes(TAROT_CARDS[0].id);
-    const noteItem = document.querySelector('#notes-list .note-item');
+    renderNotes(TAROT_CARDS[0].id, document.querySelector('#view-detail #notes-list'));
+    const noteItem = document.querySelector('#view-detail #notes-list .note-item');
     if (!noteItem) fail('note-item');
     else {
       noteItem.click();
@@ -153,6 +167,18 @@ function runSelfTest() {
       }
     }
     NotesStore.forCard(TAROT_CARDS[0].id).forEach(function (n) { NotesStore.remove(TAROT_CARDS[0].id, n.ts); });
+
+    // 抽牌记录：按类型分组渲染 + 次数
+    const origHistory2 = storeGet(STORE_KEYS.history, []);
+    localStorage.removeItem(STORE_KEYS.history);
+    HistoryStore.add(TAROT_CARDS[0].id, 'upright');
+    HistoryStore.add(TAROT_CARDS[0].id, 'reversed');
+    renderHome();
+    const histRow = document.querySelector('#view-home #draw-history .card-row');
+    if (!histRow) fail('draw-history-row');
+    else if (histRow.innerHTML.indexOf('正位 1 次 · 逆位 1 次') < 0 || histRow.innerHTML.indexOf('2 次') < 0) fail('draw-history-count');
+    else pass('draw-history-flow');
+    storeSet(STORE_KEYS.history, origHistory2);
 
     storeSet(STORE_KEYS.notes, orig.notes);
     storeSet(STORE_KEYS.learned, orig.learned);

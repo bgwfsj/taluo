@@ -62,10 +62,18 @@ function renderGlossaryGroups() {
   wrap.querySelectorAll('.card-row').forEach(function (row) {
     row.addEventListener('click', function () { Router.push('detail', row.dataset.id); });
   });
+  wrap.querySelectorAll('.learn-badge').forEach(function (badge) {
+    badge.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const done = LearnedStore.toggle(badge.closest('.card-row').dataset.id, badge.dataset.ol);
+      toast(orientationLabel(badge.dataset.ol) + (done ? ' 已标记学习 ✓' : ' 已取消学习标记'));
+      renderGlossaryGroups();
+    });
+  });
 }
 
 function cardRowHTML(card) {
-  const learned = LearnedStore.has(card.id);
+  const l = LearnedStore.byCard(card.id);
   return (
     '<div class="card-row" data-id="' + card.id + '">' +
       miniCardHTML(card) +
@@ -74,7 +82,10 @@ function cardRowHTML(card) {
         '<div class="row-en">' + card.nameEn + '</div>' +
         '<div class="row-kw">' + esc(card.upright.keywords.slice(0, 3).join(' · ')) + '</div>' +
       '</div>' +
-      '<span class="learned-badge' + (learned ? ' done' : '') + '"></span>' +
+      '<div class="row-learn">' +
+        '<span class="learn-badge up' + (l.upright ? ' done' : '') + '" data-ol="upright" role="button" aria-label="正位已学习">正</span>' +
+        '<span class="learn-badge rev' + (l.reversed ? ' done' : '') + '" data-ol="reversed" role="button" aria-label="逆位已学习">逆</span>' +
+      '</div>' +
     '</div>'
   );
 }

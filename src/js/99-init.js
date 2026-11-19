@@ -79,7 +79,7 @@ function runQA() {
     badgeBg: (function(){ var el=document.querySelector('.orientation-badge'); return el ? getComputedStyle(el).backgroundColor : null; })(),
     firstDimLabel: (function(){ var el=document.querySelector('.dim-item .dim-head'); return el ? el.textContent.trim() : null; })(),
     firstRowName: (function(){ var el=document.querySelector('.card-row .row-name'); return el ? el.textContent : null; })(),
-    learnLabel: (function(){ var el=document.getElementById('learn-label'); return el ? el.textContent : null; })(),
+    learnLabel: (function(){ var el=document.querySelector('#learn-up .ls'); return el ? el.textContent : null; })(),
     noteLimitAttr: (function(){ var el=document.getElementById('note-input'); return el ? el.getAttribute('maxlength') : null; })(),
     drawCardRect: (function(){ var el=document.getElementById('today-card'); if(!el) return null; var r=el.getBoundingClientRect(); return Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+'x'+Math.round(r.height); })()
   };

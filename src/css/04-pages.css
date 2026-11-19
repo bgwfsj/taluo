@@ -73,3 +73,16 @@
 .me-row .sub { display: block; font-size: .74rem; color: var(--ink-3); margin-top: 2px; }
 .me-row .arrow { color: var(--ink-3); }
 .version-line { text-align: center; color: var(--ink-3); font-size: .74rem; margin-top: 26px; letter-spacing: .06em; }
+
+/* 我的：正/逆位已学习分组 */
+.me-learn-sec { margin-top: 14px; }
+.me-learn-label { font-size: .74rem; font-weight: 700; letter-spacing: .14em; margin-bottom: 7px; display: flex; align-items: center; gap: 6px; }
+.me-learn-label::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+.me-learn-label.up { color: var(--upright); }
+.me-learn-label.up::before { background: var(--upright); }
+.me-learn-label.rev { color: var(--reversed); }
+.me-learn-label.rev::before { background: var(--reversed); }
+.me-learn-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* 今日页：抽牌记录 */
+.draw-history { margin-top: 22px; }

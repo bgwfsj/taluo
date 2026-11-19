@@ -217,3 +217,37 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 }
 .panel-title.about-title.collapsed .chev { transform: rotate(-45deg); }
 .about-body.collapsed { display: none; }
+
+/* 学习标记分正/逆位（图鉴行） */
+.row-learn { display: flex; gap: 6px; flex: none; }
+.learn-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 28px; height: 28px; padding: 0 7px; border-radius: 9px;
+  border: 1px solid var(--line); color: var(--ink-3);
+  font-size: .72rem; font-weight: 600; cursor: pointer;
+  background: var(--surface); transition: all .15s ease;
+  user-select: none; -webkit-user-select: none;
+}
+.learn-badge::after { content: "☆"; margin-left: 1px; }
+.learn-badge.up.done { background: var(--primary-soft); border-color: rgba(10,168,122,.35); color: var(--primary); }
+.learn-badge.up.done::after { content: "★"; }
+.learn-badge.rev.done { background: rgba(217,123,74,.12); border-color: rgba(217,123,74,.35); color: var(--reversed); }
+.learn-badge.rev.done::after { content: "★"; }
+
+/* 详情页正/逆位学习开关 */
+.learn-orients { display: flex; gap: 10px; }
+.learn-orients .learn-toggle { flex: 1; }
+.learn-toggle .ls { letter-spacing: .1em; }
+.learn-toggle .ls-star { margin-left: 2px; }
+.learn-toggle.up.done { background: var(--primary-soft); border-style: solid; border-color: rgba(10,168,122,.3); color: var(--primary); }
+.learn-toggle.rev.done { background: rgba(217,123,74,.12); border-style: solid; border-color: rgba(217,123,74,.35); color: var(--reversed); }
+
+/* 抽牌记录：次数徽标 + 面板标题副注 */
+.draw-count {
+  flex: none; font-family: var(--font-num); font-size: .78rem; color: var(--primary);
+  background: var(--primary-soft); border-radius: 999px; padding: 4px 10px;
+  font-variant-numeric: tabular-nums;
+}
+.panel-title .sub-tip {
+  margin-left: auto; font-size: .7rem; font-weight: 400; color: var(--ink-3); letter-spacing: .04em;
+}
