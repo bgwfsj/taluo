@@ -74,7 +74,7 @@
 .chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
 
 /* 六维解读 */
-.dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dim-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .dim-item {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
   padding: 13px;
@@ -251,3 +251,4 @@ textarea:focus, input:focus { border-color: var(--primary); background: #fff; }
 .panel-title .sub-tip {
   margin-left: auto; font-size: .7rem; font-weight: 400; color: var(--ink-3); letter-spacing: .04em;
 }
+

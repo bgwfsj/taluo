@@ -35,6 +35,41 @@ function runSelfTest() {
     else pass('dims-all-cards');
   } catch (e) { fail('data-exception', e.message); }
 
+  // 1.6) 今日解读增强完整性（主题 / 宜 / 忌 / 寄语 / 幸运）
+  try {
+    const badExtra = [];
+    TAROT_CARDS.forEach(function (c) {
+      ['upright', 'reversed'].forEach(function (o) {
+        const ex = todayExtraFor(c, o);
+        if (!ex.theme || !String(ex.theme).trim()) badExtra.push(c.id + ':' + o + ':theme');
+        if (!ex.overview || String(ex.overview).length < 30) badExtra.push(c.id + ':' + o + ':overview');
+        if (!Array.isArray(ex.do) || ex.do.length < 3) badExtra.push(c.id + ':' + o + ':do');
+        if (!Array.isArray(ex.dont) || ex.dont.length < 3) badExtra.push(c.id + ':' + o + ':dont');
+        if (!ex.bless || !String(ex.bless).trim()) badExtra.push(c.id + ':' + o + ':bless');
+        if (!ex.lucky || !ex.lucky.color || !ex.lucky.number || !ex.lucky.direction || !ex.lucky.time) badExtra.push(c.id + ':' + o + ':lucky');
+      });
+    });
+    if (badExtra.length) fail('today-extra', badExtra.slice(0, 6).join(','));
+    else pass('today-extra-all-cards');
+    const dimsLong = [];
+    TAROT_CARDS.forEach(function (c) {
+      ['upright', 'reversed'].forEach(function (o) {
+        const today = todayReadingFor(c, o);
+        DIMENSIONS.forEach(function (d) {
+          const len = String(today[d.key] || '').length;
+          if (len < 24) dimsLong.push(c.id + ':' + o + ':' + d.key + '=' + len);
+        });
+      });
+    });
+    if (dimsLong.length) fail('dims-rich', dimsLong.slice(0, 5).join(','));
+    else pass('dims-rich-content');
+    const c0 = TAROT_CARDS[0];
+    const l1 = luckyFor(c0, 'upright');
+    const l2 = luckyFor(c0, 'upright');
+    if (l1.number !== l2.number || l1.color.hex !== l2.color.hex) fail('lucky-deterministic');
+    else pass('lucky-deterministic');
+  } catch (e) { fail('today-extra-exception', e.message); }
+
   // 1.5) 牌面图片数据完整性
   try {
     const missingImg = TAROT_CARDS.filter(function (c) { return !CARD_IMAGES[c.id] || CARD_IMAGES[c.id].indexOf('data:image/jpeg;base64,') !== 0; });
@@ -210,3 +245,5 @@ function runSelfTest() {
   div.textContent = fails.length ? fails.join(' | ') : results.join(' | ');
   document.body.appendChild(div);
 }
+
+

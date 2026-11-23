@@ -12,7 +12,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
-    public static final String VERSION_NAME = "0.5.0";
+    public static final String VERSION_NAME = "0.6.0";
     private WebView web;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -49,3 +49,4 @@ public class MainActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 }
+

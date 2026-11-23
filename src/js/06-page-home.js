@@ -54,11 +54,23 @@ function drawToday() {
 function todayResultHTML(card, orientation, animate) {
   if (!card) return '<div class="empty-tip">牌义数据缺失</div>';
   const today = todayReadingFor(card, orientation);
+  const extra = todayExtraFor(card, orientation);
   const dims = DIMENSIONS.map(function (d) {
     const txt = today[d.key] || '';
     return '<div class="dim-item"><div class="dim-head"><span class="em">' + d.em + '</span>' + d.label + '</div><div class="dim-body">' + esc(txt) + '</div></div>';
   }).join('');
   const badgeCls = orientation === 'reversed' ? 'reversed' : 'upright';
+  const doItems = (extra.do || []).map(function (t) { return '<li class="dd-item do-item"><span class="dd-mark">＋</span>' + esc(t) + '</li>'; }).join('');
+  const dontItems = (extra.dont || []).map(function (t) { return '<li class="dd-item dont-item"><span class="dd-mark">－</span>' + esc(t) + '</li>'; }).join('');
+  const lucky = extra.lucky || {};
+  const luckyCells = [
+    ['🎨 幸运色', (lucky.color ? '<i class="lucky-swatch" style="background:' + lucky.color.hex + '"></i>' + lucky.color.name : '')],
+    ['🔢 幸运数字', String(lucky.number || '')],
+    ['🧭 幸运方位', lucky.direction || ''],
+    ['⏰ 幸运时段', lucky.time || '']
+  ].map(function (cell) {
+    return '<div class="lucky-cell"><div class="lucky-label">' + cell[0] + '</div><div class="lucky-value">' + cell[1] + '</div></div>';
+  }).join('');
   return (
     '<div class="panel" style="text-align:center;">' +
       '<div class="draw-card-wrap" style="width:190px;margin:0 auto 14px;">' + tarotCardHTML(card, { flipped: true, reversed: orientation === 'reversed' }) + '</div>' +
@@ -66,11 +78,22 @@ function todayResultHTML(card, orientation, animate) {
       '<div class="result-title"><div class="cn">' + card.name + '</div><div class="en">' + card.nameEn + '</div></div>' +
       '<p class="summary-text">' + esc(card[orientation].summary) + '</p>' +
     '</div>' +
+    '<div class="theme-card"><div class="theme-label">今日指引</div>' +
+      '<p class="theme-title">' + esc(extra.theme) + '</p>' +
+      '<p class="theme-text">' + esc(extra.overview) + '</p></div>' +
     '<div class="panel"><div class="panel-title">✨ 关键词</div><div class="chip-row">' +
       card[orientation].keywords.map(function (k) { return '<span class="chip">' + esc(k) + '</span>'; }).join('') +
     '</div></div>' +
     '<div class="section-title">今日六维解读</div>' +
     '<div class="dim-grid">' + dims + '</div>' +
+    '<div class="section-title">今日行动指南</div>' +
+    '<div class="do-dont">' +
+      '<div class="dd-col"><div class="dd-head do-head">🌱 宜 · 顺势而为</div><ul class="dd-list">' + doItems + '</ul></div>' +
+      '<div class="dd-col"><div class="dd-head dont-head">🍂 忌 · 谨慎留意</div><ul class="dd-list">' + dontItems + '</ul></div>' +
+    '</div>' +
+    '<div class="section-title">今日幸运指引</div>' +
+    '<div class="lucky-grid">' + luckyCells + '</div>' +
+    '<div class="bless-card"><span class="bless-mark">❝</span><p class="bless-text">' + esc(extra.bless) + '</p></div>' +
     '<div class="panel" id="notes-panel"><div class="panel-title">📝 备注</div>' +
       '<div class="notes-tip">轻点可编辑 · 左滑可删除 · 与图鉴牌义互通</div>' +
       notesFormHTML(card.id) + '<div id="notes-list"></div></div>' +
@@ -153,3 +176,5 @@ function drawHistoryRowHTML(card, count) {
     '</div>'
   );
 }
+
+
